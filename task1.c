@@ -1,19 +1,24 @@
 #include <stdio.h>
 
+int OPEN = 0;   // input flag - open first first with matching filename
+int SYS = 0;    // input flag - search all system files excluding home/user files
+int USR = 0;    // input flag - search the home directory and user files
+
 int main(int argc, char *argv[])
 {
-    int c, open = 0, sys = 0, usr = 0;
+    int c;
 
     while (--argc > 0 && (*++argv)[0] == '-')
         while (c = *++argv[0])
             switch (c) {
             case 'o':
-                open = 1;
+                OPEN = 1;
+                break;
             case 's':
-                sys = 1;
+                SYS = 1;
                 break;
             case 'u':
-                usr = 1;
+                USR = 1;
                 break;
             default:
                 printf("diskfrisk: illegal option %c\n", c);
@@ -21,9 +26,15 @@ int main(int argc, char *argv[])
                 break;
             }
     if (argc != 1)
-        printf("Usage: frisk -su filename");
+        printf("Usage: frisk -su filename\n");
     else
-        ; //execute search
-
+        // TODO appropriate dir's need to be triggered by SYS and USR,
+        //      whether inluded together or individually.
+        if (OPEN)
+            printf("file opened\n");
+        if (SYS)
+            printf("system files searched\n");
+        if (USR)
+            printf("user files searched\n");
     return 0;
 }
