@@ -3,20 +3,23 @@
 #include <string.h>
 #include <sys/types.h>
 
-int frisk(char* dir, char* file)
+char *dir_to_search = "/Users/";
+
+int frisk(char* file)
 {
-    DIR *dirptr = opendir(dir);
+    DIR *dirptr = opendir(dir_to_search);
     struct dirent *entry;
     int found = 0;
     
     if (dirptr != NULL) {
         while ((entry = readdir(dirptr)) != NULL) {
-            if (strcmp(file, entry->d_name) == 0) {
-                puts(entry->d_name);
-                found++;
-            }
-            else
-                continue;
+            puts(entry->d_name);
+            // if (strcmp(file, entry->d_name) == 0) {
+            //     puts(entry->d_name);
+            //     found++;
+            // }
+            // else
+            //     continue;
         }
         closedir(dirptr);
     }
@@ -29,9 +32,9 @@ int frisk(char* dir, char* file)
 
 int main()
 {
-    int res, frisk(char*, char*);
+    int res, frisk(char*);
 
-    res = frisk("./", "filename.png");
+    res = frisk("filename.png");
     if (res < 0)
         printf("File not found...\n");
     return res;

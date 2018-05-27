@@ -1,10 +1,11 @@
 #include <stdio.h>
 
+char *dir_to_search;
 int OPEN = 0;   // input flag - open first first with matching filename
 int SYS = 0;    // input flag - search all system files excluding home/user files
 int USR = 0;    // input flag - search the home directory and user files
 
-int main(int argc, char *argv[])
+char* input(int argc, char *argv[])
 {
     int c;
 
@@ -26,8 +27,9 @@ int main(int argc, char *argv[])
                 break;
             }
     if (argc != 1)
-        printf("Usage: frisk -su filename\n");
+        printf("Usage: frisk -s -u filename\n");
     else
+        dir_to_search = (SYS & USR || !SYS & !USR || SYS) ? "/" : "/Users/";
         // TODO appropriate dir's need to be triggered by SYS and USR,
         //      whether inluded together or individually.
         if (OPEN)
@@ -36,5 +38,7 @@ int main(int argc, char *argv[])
             printf("system files searched\n");
         if (USR)
             printf("user files searched\n");
-    return 0;
+    printf("\n%s\n", *argv);
+    printf("\ndir_to_s: %s\n", dir_to_search);
+    return *argv;
 }
