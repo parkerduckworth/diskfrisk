@@ -3,16 +3,18 @@
 #include <string.h>
 #include <sys/types.h>
 
-#define ROOT "/"
-#define USER "/Users/"
+#define ROOT "/"            // Root directory
+#define USER "/Users/"      // Home directory
 
 char *input(int argc, char *argv[]);
 int frisk(char*);
 
-char *dir_to_search = ROOT;
-int OPEN = 0;   // input flag - open first first with matching filename
-int SYS = 0;    // input flag - search all system files excluding home/user files
-int USR = 0;    // input flag - search the home directory and user files
+char *DNAME = ROOT;
+
+/* Input flags */
+int OPEN = 0;   // Open first result with matching filename
+int SYS = 0;    // Search all system files excluding home/user files
+int USR = 0;    // Search the home directory/user files
 
 
 int main(int argc, char *argv[])
@@ -52,9 +54,9 @@ char *input(int argc, char *argv[])
         printf("Usage: frisk -s -u filename\n");
     else
         if (USR && !SYS)
-            dir_to_search = USER;
+            DNAME = USER;
 
-        /* Print test begin */
+    /* Print test begin */
         if (OPEN)
             printf("file opened\n");
         if (SYS)
@@ -62,8 +64,8 @@ char *input(int argc, char *argv[])
         if (USR)
             printf("user files searched\n");
     printf("\n%s\n", *argv);
-    printf("\ndir_to_s: %s\n\n", dir_to_search);
-    /* Print test end*/
+    printf("\ndir_to_s: %s\n\n", DNAME);
+    /* Print test end */
 
     return *argv;
 }
@@ -71,12 +73,12 @@ char *input(int argc, char *argv[])
 
 int frisk(char* file)
 {
-    DIR *dirptr = opendir(dir_to_search);
+    DIR *dir = opendir(DNAME);
     struct dirent *entry;
     int found = 0;
     
-    if (dirptr != NULL) {
-        while ((entry = readdir(dirptr)) != NULL) {
+    if (dir != NULL) {
+        while ((entry = readdir(dir)) != NULL) {
             puts(entry->d_name);
             // if (strcmp(file, entry->d_name) == 0) {
             //     puts(entry->d_name);
@@ -85,7 +87,7 @@ int frisk(char* file)
             // else
             //     continue;
         }
-        closedir(dirptr);
+        closedir(dir);
     }
     else
         perror("Dir Error");
