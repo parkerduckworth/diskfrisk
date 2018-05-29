@@ -1,30 +1,42 @@
+#include <ctype.h>
 #include <dirent.h>
+// #include <errno.h> look into this
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
-#define ROOT "/"            // Root directory
-#define USER "/Users/"      // Home directory
+#define ROOT "/"           // Root directory
+#define USER "/Users"      // Home directory
 
 char *input(int argc, char *argv[]);
-int frisk(char*);
+int frisk(char *fname, char *dname);
+void traverse(char *fname, char *dname);
 
-char *DNAME = ROOT;
+char *dname = ROOT;
 
 /* Input flags */
-int OPEN = 0;   // Open first result with matching filename
-int SYS = 0;    // Search all system files excluding home/user files
-int USR = 0;    // Search the home directory/user files
+int open = 0;   // Open first result with matching filename
+int sys = 0;    // Search all system files excluding home/user files
+int usr = 0;    // Search the home directory/user files
+
+int found = 0;
 
 
 int main(int argc, char *argv[])
 {
-    char *file;
+    char *fname;
     int res;
 
-    file = input(argc, argv);
-    if ((res = frisk(file)) < 0)
-        perror("Not Found");
+    fname = input(argc, argv);
+    if ((res = frisk(fname, dname)) < 0)
+        printf("%s not found...\n", fname);
+
+    // Delete this test
+    printf("Main returned: %d\n", res);
+
     return res;
 }
 
@@ -34,16 +46,16 @@ char *input(int argc, char *argv[])
     int c;
 
     while (--argc > 0 && (*++argv)[0] == '-')
-        while (c = *++argv[0])
+        while ((c = *++argv[0]))
             switch (c) {
             case 'o':
-                OPEN = 1;
+                open = 1;
                 break;
             case 's':
-                SYS = 1;
+                sys = 1;
                 break;
             case 'u':
-                USR = 1;
+                usr = 1;
                 break;
             default:
                 printf("diskfrisk: illegal option %c\n", c);
@@ -53,45 +65,78 @@ char *input(int argc, char *argv[])
     if (argc != 1)
         printf("Usage: frisk -s -u filename\n");
     else
-        if (USR && !SYS)
-            DNAME = USER;
+        if (usr && !sys)
+            dname = USER;
 
     /* Print test begin */
-        if (OPEN)
+        if (open)
             printf("file opened\n");
-        if (SYS)
+        if (sys)
             printf("system files searched\n");
-        if (USR)
+        if (usr)
             printf("user files searched\n");
     printf("\n%s\n", *argv);
-    printf("\ndir_to_s: %s\n\n", DNAME);
+    printf("\ndir_to_s: %s\n\n", dname);
     /* Print test end */
 
     return *argv;
 }
 
 
-int frisk(char* file)
+int frisk(char* fname, char* dname)
 {
-    DIR *dir = opendir(DNAME);
-    struct dirent *entry;
-    int found = 0;
+    void traverse(char*, char*);
+
+    traverse(fname, dname);
+
+    // Add more to result line. Time elapsed, etc.
+    printf("%d results.\n", found);
     
-    if (dir != NULL) {
-        while ((entry = readdir(dir)) != NULL) {
-            puts(entry->d_name);
-            // if (strcmp(file, entry->d_name) == 0) {
-            //     puts(entry->d_name);
-            //     found++;
-            // }
-            // else
-            //     continue;
+    return (found > 0) ? 0 : -1;
+}
+
+
+/* Traverse selected subtree  */
+void traverse(char* fname, char* dname)
+{
+    DIR *dir;
+    struct dirent *entry;
+    struct stat fstat;
+    char path[PATH_MAX];
+    int p_len = strlen(dname);  // Parent dir name length
+
+    strcpy(path, dname);
+    path[p_len++] = '/';
+    
+    // printf("%s\n", dname); // delete this?
+
+    // Hidden files at end of User/~ dir require permissions, throws segfault
+    // Not ideal, because no error catching for opendir().
+    if (!(dir = opendir(dname)))
+        // perror("opendir");
+        return;
+
+    while ((entry = readdir(dir))) {
+
+        // strcpy(path, entry->d_name); //probably dont need this
+
+        // What are these ".", "..", and ".dirname" files
+        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")) || 
+            entry->d_name[0] == '.' || !(strcmp(entry->d_name, "Guest")))
+                continue;
+
+        // Record absolute path and populate fstat
+        strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
+        lstat(path, &fstat);
+
+        // Recurse if dir, else print matching result
+        if (S_ISDIR(fstat.st_mode)) {
+            traverse(fname, path);
+        } else if (strcmp(fname, entry->d_name) == 0) {   
+            printf("%s -> %s\n", fname, path);
+            found++;
         }
-        closedir(dir);
     }
-    else
-        perror("Dir Error");
-
-    return (found > 0) ? found : -1;
-
+    closedir(dir);
+    return;
 }
