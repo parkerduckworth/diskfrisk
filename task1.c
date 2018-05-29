@@ -12,9 +12,6 @@ char* input(int argc, char *argv[])
     while (--argc > 0 && (*++argv)[0] == '-')
         while (c = *++argv[0])
             switch (c) {
-            case 'o':
-                OPEN = 1;
-                break;
             case 's':
                 SYS = 1;
                 break;

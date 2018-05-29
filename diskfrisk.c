@@ -1,6 +1,5 @@
 #include <ctype.h>
 #include <dirent.h>
-// #include <errno.h> look into this
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,134 +8,137 @@
 #include <sys/types.h>
 
 #define ROOT "/"           // Root directory
-#define USER "/Users"      // Home directory
+#define HOME "/Users"      // Home directory
 
 char *input(int argc, char *argv[]);
-int frisk(char *fname, char *dname);
+void display_state(char c, char* fname);
+void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
 
 char *dname = ROOT;
 
 /* Input flags */
-int open = 0;   // Open first result with matching filename
-int sys = 0;    // Search all system files excluding home/user files
-int usr = 0;    // Search the home directory/user files
+int sys = 0;       // Search all system files excluding home/user files
+int home = 0;      // Search the home directory/user files
 
-int found = 0;
+int no_fn = 0;     // No filename
+int badflag = 0;   // Illegal flag
+int found = 0;     // Number of results
 
 
 int main(int argc, char *argv[])
 {
     char *fname;
-    int res;
 
-    fname = input(argc, argv);
-    if ((res = frisk(fname, dname)) < 0)
-        printf("%s not found...\n", fname);
+    if ((fname = input(argc, argv)) == NULL)
+        return -1;
 
-    // Delete this test
-    printf("Main returned: %d\n", res);
+    frisk(fname, dname);
+    
+    if (found < 1)
+        printf("%s not found...\n\n", fname);
 
-    return res;
+    return 0;
 }
 
 
 char *input(int argc, char *argv[])
 {
-    int c;
+    char c, x;
 
     while (--argc > 0 && (*++argv)[0] == '-')
         while ((c = *++argv[0]))
             switch (c) {
-            case 'o':
-                open = 1;
-                break;
-            case 's':
-                sys = 1;
-                break;
-            case 'u':
-                usr = 1;
-                break;
-            default:
-                printf("diskfrisk: illegal option %c\n", c);
-                argc = 0;
-                break;
+                case 's':
+                    sys = 1;
+                    break;
+                case 'h':
+                    home = 1;
+                    break;
+                default:
+                    x = c;
+                    badflag = 1;
+                    break;
             }
     if (argc != 1)
-        printf("Usage: frisk -s -u filename\n");
-    else
-        if (usr && !sys)
-            dname = USER;
+        no_fn = 1;
+    else if (home && !sys)
+        dname = HOME;
 
-    /* Print test begin */
-        if (open)
-            printf("file opened\n");
-        if (sys)
-            printf("system files searched\n");
-        if (usr)
-            printf("user files searched\n");
-    printf("\n%s\n", *argv);
-    printf("\ndir_to_s: %s\n\n", dname);
-    /* Print test end */
+    display_state(x, *argv);
 
-    return *argv;
+    return (no_fn + badflag > 0) ? NULL : *argv;
+}
+
+/* Output current state to user */
+void display_state(char c, char* fname)
+{
+    // Illegal input - error messages
+    if (badflag)
+        printf("\nIllegal option '%c'\n\n", c);
+    else if (no_fn)
+        printf("\nUsage: frisk -h -s <filename>\n\n");
+    // Legal input submitted
+    else {
+        printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
+        if (home) 
+            printf("Home directory is being frisked...\n");
+        if ((!home && !sys) || sys)
+            printf("System directory is being frisked...\n");
+        printf("Searching for: %s\n\n", fname);
+    }
 }
 
 
-int frisk(char* fname, char* dname)
+/* Call traverse, display result line */
+void frisk(char* fname, char* dname)
 {
-    void traverse(char*, char*);
-
     traverse(fname, dname);
 
     // Add more to result line. Time elapsed, etc.
-    printf("%d results.\n", found);
-    
-    return (found > 0) ? 0 : -1;
+    printf("\n%d result%s, in <time> seconds.\n\n", found, ((found != 1) ? "s" : ""));
 }
 
 
-/* Traverse selected subtree  */
+/* Traverse selected subtree */
 void traverse(char* fname, char* dname)
 {
     DIR *dir;
     struct dirent *entry;
-    struct stat fstat;
+    struct stat fst;
     char path[PATH_MAX];
-    int p_len = strlen(dname);  // Parent dir name length
+    size_t p_len = strlen(dname);  // Parent dir name length
 
     strcpy(path, dname);
     path[p_len++] = '/';
-    
-    // printf("%s\n", dname); // delete this?
 
-    // Hidden files at end of User/~ dir require permissions, throws segfault
     // Not ideal, because no error catching for opendir().
     if (!(dir = opendir(dname)))
-        // perror("opendir");
         return;
 
     while ((entry = readdir(dir))) {
 
-        // strcpy(path, entry->d_name); //probably dont need this
-
-        // What are these ".", "..", and ".dirname" files
-        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")) || 
+        // These directories are not traversed,
+        // they're either hidden or require permission to open.
+        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")) ||
             entry->d_name[0] == '.' || !(strcmp(entry->d_name, "Guest")))
                 continue;
 
-        // Record absolute path and populate fstat
+        // Home directory skips unless explicitly flagged
+        if (!home && !(strcmp(entry->d_name, "Users")))
+                continue;
+
+        // Record absolute path and populate fst
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
-        lstat(path, &fstat);
+        lstat(path, &fst);
 
         // Recurse if dir, else print matching result
-        if (S_ISDIR(fstat.st_mode)) {
+        if (S_ISDIR(fst.st_mode)) {
             traverse(fname, path);
-        } else if (strcmp(fname, entry->d_name) == 0) {   
+        } else if (strcmp(fname, entry->d_name) == 0) {
             printf("%s -> %s\n", fname, path);
             found++;
         }
     }
     closedir(dir);
-    return;
 }

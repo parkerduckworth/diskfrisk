@@ -26,6 +26,8 @@ void traverse(char* fname, char* dname)
     char path[PATH_MAX];
     int p_len = strlen(dname);  // Parent dir name length
 
+    FILE *f;
+
     strcpy(path, dname);
     path[p_len++] = '/';
     
@@ -54,6 +56,7 @@ void traverse(char* fname, char* dname)
         if (S_ISDIR(fstat.st_mode)) {
             traverse(fname, path);
         } else if (strcmp(fname, entry->d_name) == 0) {   
+
             printf("%s -> %s\n", fname, path);
             found++;
         }
@@ -70,7 +73,7 @@ int frisk(char* fname, char* dname)
 
     // Add more to result line. Time elapsed, etc.
     printf("%d results.\n", found);
-    
+
     return (found > 0) ? 0 : -1;
 }
 
@@ -79,7 +82,7 @@ int main()
 {
     int res, frisk(char*, char*);
 
-    res = frisk("LES.pdf", USER);
+    res = frisk("main.c", USER);
 
     printf("Main returned: %d\n", res);
     return res;
