@@ -1,3 +1,7 @@
+/* FIGURE OUT HOW TO DEBUG THIS BLOODY THING */
+
+
+#include <ctype.h>
 #include <dirent.h>
 // #include <errno.h> look into this
 #include <limits.h>
@@ -7,51 +11,76 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#define ROOT "/"       // Root directory
+#define USER "/Users"  // Home directory
 
-char* FILENAME = "Untitled.ipynb";
+int found = 0;
 
-int frisk(char* dname)
+
+/* Traverse selected subtree  */
+void traverse(char* fname, char* dname)
 {
     DIR *dir;
     struct dirent *entry;
     struct stat fstat;
     char path[PATH_MAX];
-    int found = 0, len = strlen(dname);
+    int p_len = strlen(dname);  // Parent dir name length
 
     strcpy(path, dname);
-    path[len++] = '/';
+    path[p_len++] = '/';
     
-    if (!(dir = opendir(dname))) {
-        perror("open");
-        return -1;
-    }
+    // printf("%s\n", dname); // delete this?
+
+    // Hidden files at end of User/~ dir require permissions, throws segfault
+    // Not ideal, because no error catching for opendir().
+    if (!(dir = opendir(dname)))
+        // perror("opendir");
+        return;
 
     while ((entry = readdir(dir))) {
 
-        strcat(path, entry->d_name);
-        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")))
-            continue;
+        // strcpy(path, entry->d_name); //probably dont need this
 
-        strncpy(path + len, entry->d_name, PATH_MAX - len);
+        // What are these ".", "..", and ".dirname" files
+        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")) || 
+            entry->d_name[0] == '.' || !(strcmp(entry->d_name, "Guest")))
+                continue;
+
+        // Record absolute path and populate fstat
+        strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
         lstat(path, &fstat);
 
+        // Recurse if dir, else print matching result
         if (S_ISDIR(fstat.st_mode)) {
-            frisk(path);
-        } else if (strcmp(FILENAME, entry->d_name) == 0)
-            printf("%s\n", path);
+            traverse(fname, path);
+        } else if (strcmp(fname, entry->d_name) == 0) {   
+            printf("%s -> %s\n", fname, path);
+            found++;
+        }
     }
     closedir(dir);
-
-
-    return found;
-
+    return;
 }
+
+int frisk(char* fname, char* dname)
+{
+    void traverse(char*, char*);
+
+    traverse(fname, dname);
+
+    // Add more to result line. Time elapsed, etc.
+    printf("%d results.\n", found);
+    
+    return (found > 0) ? 0 : -1;
+}
+
 
 int main()
 {
-    int res, frisk(char*);
+    int res, frisk(char*, char*);
 
-    // print path to file 
-    res = frisk("/Users");
+    res = frisk("LES.pdf", USER);
+
+    printf("Main returned: %d\n", res);
     return res;
 }
