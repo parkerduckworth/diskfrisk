@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 
 #define ROOT "/"           // Root directory
 #define HOME "/Users"      // Home directory
@@ -25,6 +26,9 @@ int no_fn = 0;     // No filename
 int badflag = 0;   // Illegal flag
 int found = 0;     // Number of results
 
+clock_t start, end;
+double t_elapsed;
+
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +45,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
+/* Collect user input, parse optional flags */
 char *input(int argc, char *argv[])
 {
     char c, x;
@@ -56,7 +60,7 @@ char *input(int argc, char *argv[])
                     home = 1;
                     break;
                 default:
-                    x = c;
+                    x = c;  // Save illegal flag to pass to user.
                     badflag = 1;
                     break;
             }
@@ -65,6 +69,7 @@ char *input(int argc, char *argv[])
     else if (home && !sys)
         dname = HOME;
 
+    // Update user on current state of process.
     display_state(x, *argv);
 
     return (no_fn + badflag > 0) ? NULL : *argv;
@@ -78,6 +83,7 @@ void display_state(char c, char* fname)
         printf("\nIllegal option '%c'\n\n", c);
     else if (no_fn)
         printf("\nUsage: frisk -h -s <filename>\n\n");
+        
     // Legal input submitted
     else {
         printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
@@ -93,10 +99,15 @@ void display_state(char c, char* fname)
 /* Call traverse, display result line */
 void frisk(char* fname, char* dname)
 {
+    start = clock();
+
     traverse(fname, dname);
 
-    // Add more to result line. Time elapsed, etc.
-    printf("\n%d result%s, in <time> seconds.\n\n", found, ((found != 1) ? "s" : ""));
+    end = clock();
+    t_elapsed = ((double)(end-start)) / CLOCKS_PER_SEC;
+
+    printf("\n%d result%s, in %.2f seconds.\n\n", found, 
+        ((found != 1) ? "s" : ""), t_elapsed);
 }
 
 
