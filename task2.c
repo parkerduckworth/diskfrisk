@@ -16,10 +16,7 @@
 #define ROOT "/"       // Root directory
 #define USER "/Users"  // Home directory
 
-int openfile(char* path);
-
 int found = 0;
-int open = 1;   // -o flag input
 
 
 int main()
@@ -27,53 +24,10 @@ int main()
     int res;
     void frisk(char*, char*);
 
-    frisk("main.c", USER);
+    frisk("envs", USER);
 
     return 0;
 }
-
-
-
-/*  */
-int openfile(char* path)
-{
-    pid_t pid;
-    int status;
-
-
-    int len = strlen(path);
-    char *sh[4];
-    char *script = (char*)malloc(sizeof(char) * len + 5);
-
-    strcpy(script, "open ");
-    strcat(script, path);
-
-    sh[0] = "sh";
-    sh[1] = "-c";
-    sh[2] = script;
-    sh[3] = NULL;
-
-    // Modularize this 
-    if ((pid = fork()) < 0) {
-        perror("fork");
-        exit(1);
-    } else if (pid == 0) {
-        printf("\nOpening: %s\n\n", path);
-        if ((execvp(sh[0], sh)) < 0) {
-            exit(1);
-        }
-    } else {
-        while (wait(&status) != pid)
-            ;
-    }
-
-    free(script);
-    printf("char* script has been deallocated.\n\n");
-
-    return 0;
-}
-
-
 
 
 /* Call traverse, display result line */
@@ -95,7 +49,7 @@ void traverse(char* fname, char* dname)
 {
     DIR *dir;
     struct dirent *entry;
-    struct stat fstat;
+    struct stat fst;
     char path[PATH_MAX];
     int p_len = strlen(dname);  // Parent dir name length
 
@@ -121,27 +75,58 @@ void traverse(char* fname, char* dname)
             entry->d_name[0] == '.' || !(strcmp(entry->d_name, "Guest")))
                 continue;
 
-        // Record absolute path and populate fstat
+        // Record absolute path and initialize fst
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
-        lstat(path, &fstat);
+        lstat(path, &fst);
+
+
+
+
+
+
+
+
+
+
 
         // Recurse if dir, else print matching result
-        if (S_ISDIR(fstat.st_mode)) {
+        if (strcmp(fname, entry->d_name) == 0) {   
+            printf("%s -> %s\n", fname, path);
+            found++;
+        } else if (S_ISDIR(fst.st_mode)) {
             traverse(fname, path);
-        } else if (strcmp(fname, entry->d_name) == 0) {   
+        }
 
+
+
+
+// Recurse if no match, else print matching result
+        if (strcmp(fname, entry->d_name) == 0) {
             printf("%s -> %s\n", fname, path);
 
-            // attempting bash script exec
+            // Open first occurance of filename match
             if (open) {
                 if ((openfile(path)) < 0) {
                     printf("Unable to open %s\n", path);
                     exit(1);
                 }
+
+                // Must be set back to 0, or every result will be opened.
                 open = 0;
             }
             found++;
-        }
+        } else if (S_ISDIR(fst.st_mode)) {
+            traverse(fname, path);
+        } 
+
+
+
+
+
+
+
+
+
     }
     closedir(dir);
     return;

@@ -1,6 +1,5 @@
 /* TODO
 
--> Allow search for dirs, if flagged, -o should work with this too
 -> Maybe a GREP type search for not exact matches
 
 */
@@ -26,6 +25,8 @@ If both '-h' and '-s' are input, the result is the same as if no
 flags are input. They can also be input as '-sh' or '-hs'. Order
 doesn't matter here.
 ~ user$ ./frisk -h -s <filename>
+
+Directories can be searched, and set to open upon discovery as well.
 
 An '-o' flag is available to automatically open up the first matched 
 result of search.  The search will continue, and all matches will be
@@ -199,10 +200,8 @@ void traverse(char* fname, char* dname)
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
         lstat(path, &fst);
 
-        // Recurse if dir, else print matching result
-        if (S_ISDIR(fst.st_mode)) {
-            traverse(fname, path);
-        } else if (strcmp(fname, entry->d_name) == 0) {
+        // Recurse if no match, else print matching result
+        if (strcmp(fname, entry->d_name) == 0) {
             printf("%s -> %s\n", fname, path);
 
             // Open first occurance of filename match
@@ -216,7 +215,9 @@ void traverse(char* fname, char* dname)
                 open = 0;
             }
             found++;
-        }
+        } else if (S_ISDIR(fst.st_mode)) {
+            traverse(fname, path);
+        } 
     }
     closedir(dir);
 }
