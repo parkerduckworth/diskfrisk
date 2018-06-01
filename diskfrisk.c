@@ -1,3 +1,14 @@
+/* TODO
+
+-> Allow search for dirs, if flagged, -o should work with this too
+-> Maybe a GREP type search for not exact matches
+
+*/
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
 /* 
 
 Here is a short explanation of how to execute commands, with examples:
@@ -16,6 +27,10 @@ flags are input. They can also be input as '-sh' or '-hs'. Order
 doesn't matter here.
 ~ user$ ./frisk -h -s <filename>
 
+An '-o' flag is available to automatically open up the first matched 
+result of search.  The search will continue, and all matches will be
+listed.
+
 */
 
 #include <ctype.h>
@@ -27,24 +42,36 @@ doesn't matter here.
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-#define ROOT "/"           // Root directory
-#define HOME "/Users"      // Home directory
+#define ROOT      "/"       // Root directory
+#define HOME      "/Users"  // Home directory
+#define NULLCHAR  '\0'
+
+/* Bash syntax */
+#define RDFROMS   "-c"      // Read-from-string option
+#define SHOPEN    "open "   // Open command
+#define SHELL     "sh"      // Initiate new environment context
 
 char *input(int argc, char *argv[]);
-void display_state(char c, char* fname);
+void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
-
-char *dname = ROOT;
+int openfile(char* path);
+int fork_process(char *sh_script, char *path);
 
 /* Input flags */
-int sys = 0;       // Search all system files excluding home/user files
-int home = 0;      // Search the home directory/user files
+int sys = 0;         // Search all system files excluding home/user files
+int home = 0;        // Search the home directory/user files
+int open = 0;        // Open first occurance of filename match
 
-int no_fn = 0;     // No filename
-int badflag = 0;   // Illegal flag
-int found = 0;     // Number of results
+/* Error flags */
+int no_fn = 0;       // No filename
+int badflag = 0;     // Illegal flag
+
+int found = 0;       // Number of results
+char *dname = ROOT;  // Set by default
 
 clock_t start, end;
 double t_elapsed;
@@ -65,6 +92,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+
 /* Collect user input, parse optional flags */
 char *input(int argc, char *argv[])
 {
@@ -73,11 +101,14 @@ char *input(int argc, char *argv[])
     while (--argc > 0 && (*++argv)[0] == '-')
         while ((c = *++argv[0]))
             switch (c) {
-                case 's':
-                    sys = 1;
+                case 'o':
+                    open = 1;
                     break;
                 case 'h':
                     home = 1;
+                    break;
+                case 's':
+                    sys = 1;
                     break;
                 default:
 
@@ -96,6 +127,7 @@ char *input(int argc, char *argv[])
 
     return (no_fn + badflag > 0) ? NULL : *argv;
 }
+
 
 /* Output current state to user */
 void display_state(char c, char* fname)
@@ -172,8 +204,76 @@ void traverse(char* fname, char* dname)
             traverse(fname, path);
         } else if (strcmp(fname, entry->d_name) == 0) {
             printf("%s -> %s\n", fname, path);
+
+            // Open first occurance of filename match
+            if (open) {
+                if ((openfile(path)) < 0) {
+                    printf("Unable to open %s\n", path);
+                    exit(1);
+                }
+
+                // Must be set back to 0, or every result will be opened.
+                open = 0;
+            }
             found++;
         }
     }
     closedir(dir);
+}
+
+
+/* Construct shell command to open target file */
+int openfile(char* path)
+{
+
+    int res;
+    char *sh_cmd = SHOPEN;          // Shell command, 'open'
+    size_t curr_sz = strlen(path);  // Current length of shell script
+    size_t c_len = strlen(sh_cmd);  // Length of shell command
+
+    // String to contain shell script -> open command + filepath + slot for NULLCHAR
+    char *sh_script = (char*)malloc(sizeof(char) * curr_sz + c_len + 1);
+
+    // Udpate current size and terminate string.
+    curr_sz += c_len + 1;
+    *(sh_script + curr_sz) = NULLCHAR;
+
+    strcpy(sh_script, sh_cmd);
+    strcat(sh_script, path);
+
+    res = fork_process(sh_script, path);
+
+    free(sh_script);
+
+    return res;
+}
+
+
+/* Execute shell command in forked child process */
+int fork_process(char* sh_script, char* path)
+{
+    pid_t pid;
+    int status;
+
+    // Shell executable, separated into tokens
+    char *sh_tok[] = {SHELL, RDFROMS, sh_script, NULL};
+
+    if ((pid = fork()) < 0) {
+        perror("fork");
+        return -1;
+    } else if (pid == 0) {
+
+        // Child process
+        printf("\nOpening: %s\n", path);
+        if ((execvp(SHELL, sh_tok)) < 0) {
+            perror("execvp");
+            return -1;
+        }
+    } else {
+
+        // Parent process
+        while (wait(&status) != pid)
+            ;
+    }
+    return 0;
 }
