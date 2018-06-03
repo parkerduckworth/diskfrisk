@@ -1,5 +1,6 @@
 /* TODO
 
+-> Combine input flags into struct
 -> Maybe a GREP type search for not exact matches
 
 */
@@ -46,9 +47,12 @@ listed.
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define ROOT      "/"       // Root directory
-#define HOME      "/Users"  // Home directory
 #define NULLCHAR  '\0'
+
+/* OSX nomenclature */
+#define HNAME     "Users"   // Home directory name
+#define HOME      "/Users"  // Home directory path
+#define ROOT      "/"       // Root directory path
 
 /* Bash syntax */
 #define RDFROMS   "-c"      // Read-from-string option
@@ -59,14 +63,16 @@ char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
-void exec_result(char* fname, char* path);
-int openfile(char* path);
+int entry_isvalid(char *fname);
+void exec_result(char *fname, char *path);
+int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 
 /* Input flags */
-int sys = 0;         // Search all system files excluding home/user files
 int home = 0;        // Search the home directory/user files
 int open = 0;        // Open first occurance of filename match
+int perm = 0;        // Display permission errors
+int sys = 0;         // Search all system files excluding home/user files
 
 /* Error flags */
 int no_fn = 0;       // No filename
@@ -103,11 +109,14 @@ char *input(int argc, char *argv[])
     while (--argc > 0 && (*++argv)[0] == '-')
         while ((c = *++argv[0]))
             switch (c) {
+                 case 'h':
+                    home = 1;
+                    break;
                 case 'o':
                     open = 1;
                     break;
-                case 'h':
-                    home = 1;
+                case 'p':
+                    perm = 1;
                     break;
                 case 's':
                     sys = 1;
@@ -132,7 +141,7 @@ char *input(int argc, char *argv[])
 
 
 /* Output current state to user */
-void display_state(char c, char* fname)
+void display_state(char c, char *fname)
 {
     // Illegal input - error messages
     if (badflag)
@@ -153,7 +162,7 @@ void display_state(char c, char* fname)
 
 
 /* Call traverse, display result line */
-void frisk(char* fname, char* dname)
+void frisk(char *fname, char *dname)
 {
     start = clock();
 
@@ -168,7 +177,7 @@ void frisk(char* fname, char* dname)
 
 
 /* Traverse selected subtree */
-void traverse(char* fname, char* dname)
+void traverse(char *fname, char *dname)
 {
     DIR *dir;
     struct dirent *entry;
@@ -181,21 +190,16 @@ void traverse(char* fname, char* dname)
     // Append to existing path string before adding child dir/file
     path[p_len++] = '/';
 
-    // Not ideal, because no error catching for opendir()
-    if (!(dir = opendir(dname)))
+    if (!(dir = opendir(dname))) {
+        if (perm)
+            printf("\nPermission denied: %s\n\n", path);
         return;
+    }
 
     while ((entry = readdir(dir))) {
 
-        // These directories are not traversed, they're either hidden 
-        // or require permission to open
-        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")) ||
-            entry->d_name[0] == '.' || !(strcmp(entry->d_name, "Guest")))
-                continue;
-
-        // If only "-s" is flagged
-        if (!home && sys && !(strcmp(entry->d_name, "Users")))
-                continue;
+        if (!entry_isvalid(entry->d_name))
+            continue;
 
         // Record absolute path and initialize fst
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
@@ -203,7 +207,6 @@ void traverse(char* fname, char* dname)
 
         // Recurse if no match, else handle matching result
         if (strcmp(fname, entry->d_name) == 0) {
-           
             exec_result(fname, path);
 
         } else if (S_ISDIR(fst.st_mode)) {
@@ -214,10 +217,27 @@ void traverse(char* fname, char* dname)
 }
 
 
-/* Execute input/filename match as necessary */
-void exec_result(char* fname, char* path)
+/* Determine whether or not to traverse given entry */
+int entry_isvalid(char *fname)
 {
-    printf("%s -> %s\n", fname, path);
+    int is_valid = 1;
+
+    if (!(strcmp(fname, ".")) || !(strcmp(fname, "..")) ||
+        fname[0] == '.')
+            is_valid = 0;
+
+    // If only "-s" is flagged
+    if (!home && sys && !(strcmp(fname, HNAME)))
+            is_valid = 0;
+
+    return is_valid;
+}
+
+
+/* Execute input/filename match as necessary */
+void exec_result(char *fname, char *path)
+{
+    printf("[%s] -> %s\n", fname, path);
 
     // Open first occurance of filename match
     if (open) {
@@ -235,7 +255,7 @@ void exec_result(char* fname, char* path)
 
 
 /* Construct shell command to open target file */
-int openfile(char* path)
+int openfile(char *path)
 {
 
     int res;
@@ -244,7 +264,7 @@ int openfile(char* path)
     size_t c_len = strlen(sh_cmd);  // Length of shell command
 
     // String to contain shell script -> open command + filepath + slot for NULLCHAR
-    char *sh_script = (char*)malloc(sizeof(char) * curr_sz + c_len + 1);
+    char *sh_script = (char *)malloc(sizeof(char) * curr_sz + c_len + 1);
 
     // Udpate current size and terminate string.
     curr_sz += c_len + 1;
@@ -262,7 +282,7 @@ int openfile(char* path)
 
 
 /* Execute shell command in forked child process */
-int fork_process(char* sh_script, char* path)
+int fork_process(char *sh_script, char *path)
 {
     pid_t pid;
     int status;
