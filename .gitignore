@@ -1,8 +1,5 @@
 .vscode/*
 
-tests/task1
-tests/task2
-
 *.out
 
 .DS_Store

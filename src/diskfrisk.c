@@ -59,6 +59,7 @@ char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
+void exec_result(char* fname, char* path);
 int openfile(char* path);
 int fork_process(char *sh_script, char *path);
 
@@ -200,26 +201,36 @@ void traverse(char* fname, char* dname)
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
         lstat(path, &fst);
 
-        // Recurse if no match, else print matching result
+        // Recurse if no match, else handle matching result
         if (strcmp(fname, entry->d_name) == 0) {
-            printf("%s -> %s\n", fname, path);
+           
+            exec_result(fname, path);
 
-            // Open first occurance of filename match
-            if (open) {
-                if ((openfile(path)) < 0) {
-                    printf("Unable to open %s\n", path);
-                    exit(1);
-                }
-
-                // Must be set back to 0, or every result will be opened.
-                open = 0;
-            }
-            found++;
         } else if (S_ISDIR(fst.st_mode)) {
             traverse(fname, path);
         } 
     }
     closedir(dir);
+}
+
+
+/* Execute input/filename match as necessary */
+void exec_result(char* fname, char* path)
+{
+    printf("%s -> %s\n", fname, path);
+
+    // Open first occurance of filename match
+    if (open) {
+        if ((openfile(path)) < 0) {
+            printf("Unable to open %s\n", path);
+            exit(1);
+        }
+
+        // Must be set back to 0, or every result will be opened.
+        open = 0;
+    }
+    found++;
+    return;
 }
 
 
@@ -265,7 +276,7 @@ int fork_process(char* sh_script, char* path)
     } else if (pid == 0) {
 
         // Child process
-        printf("\nOpening: %s\n", path);
+        printf("\nOpening: %s\n\n", path);
         if ((execvp(SHELL, sh_tok)) < 0) {
             perror("execvp");
             return -1;
