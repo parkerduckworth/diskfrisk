@@ -46,9 +46,12 @@ listed.
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define ROOT      "/"       // Root directory
-#define HOME      "/Users"  // Home directory
 #define NULLCHAR  '\0'
+
+/* OSX nomenclature */
+#define HNAME     "Users"   // Home directory name
+#define HOME      "/Users"  // Home directory path
+#define ROOT      "/"       // Root directory path
 
 /* Bash syntax */
 #define RDFROMS   "-c"      // Read-from-string option
@@ -59,6 +62,7 @@ char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
+int entry_isvalid(char* fname);
 void exec_result(char* fname, char* path);
 int openfile(char* path);
 int fork_process(char *sh_script, char *path);
@@ -187,15 +191,8 @@ void traverse(char* fname, char* dname)
 
     while ((entry = readdir(dir))) {
 
-        // These directories are not traversed, they're either hidden 
-        // or require permission to open
-        if (!(strcmp(entry->d_name, ".")) || !(strcmp(entry->d_name, "..")) ||
-            entry->d_name[0] == '.' || !(strcmp(entry->d_name, "Guest")))
-                continue;
-
-        // If only "-s" is flagged
-        if (!home && sys && !(strcmp(entry->d_name, "Users")))
-                continue;
+        if (!entry_isvalid(entry->d_name))
+            continue;
 
         // Record absolute path and initialize fst
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
@@ -203,7 +200,6 @@ void traverse(char* fname, char* dname)
 
         // Recurse if no match, else handle matching result
         if (strcmp(fname, entry->d_name) == 0) {
-           
             exec_result(fname, path);
 
         } else if (S_ISDIR(fst.st_mode)) {
@@ -211,6 +207,23 @@ void traverse(char* fname, char* dname)
         } 
     }
     closedir(dir);
+}
+
+
+/* Determine whether or not to traverse given entry */
+int entry_isvalid(char* fname)
+{
+    int is_valid = 1;
+
+    if (!(strcmp(fname, ".")) || !(strcmp(fname, "..")) ||
+        fname[0] == '.')
+            is_valid = 0;
+
+    // If only "-s" is flagged
+    if (!home && sys && !(strcmp(fname, HNAME)))
+            is_valid = 0;
+
+    return is_valid;
 }
 
 
