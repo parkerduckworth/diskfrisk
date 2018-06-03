@@ -1,5 +1,6 @@
 /* TODO
 
+-> Combine input flags into struct
 -> Maybe a GREP type search for not exact matches
 
 */
@@ -62,15 +63,16 @@ char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
-int entry_isvalid(char* fname);
-void exec_result(char* fname, char* path);
-int openfile(char* path);
+int entry_isvalid(char *fname);
+void exec_result(char *fname, char *path);
+int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 
 /* Input flags */
-int sys = 0;         // Search all system files excluding home/user files
 int home = 0;        // Search the home directory/user files
 int open = 0;        // Open first occurance of filename match
+int perm = 0;        // Display permission errors
+int sys = 0;         // Search all system files excluding home/user files
 
 /* Error flags */
 int no_fn = 0;       // No filename
@@ -107,11 +109,14 @@ char *input(int argc, char *argv[])
     while (--argc > 0 && (*++argv)[0] == '-')
         while ((c = *++argv[0]))
             switch (c) {
+                 case 'h':
+                    home = 1;
+                    break;
                 case 'o':
                     open = 1;
                     break;
-                case 'h':
-                    home = 1;
+                case 'p':
+                    perm = 1;
                     break;
                 case 's':
                     sys = 1;
@@ -136,7 +141,7 @@ char *input(int argc, char *argv[])
 
 
 /* Output current state to user */
-void display_state(char c, char* fname)
+void display_state(char c, char *fname)
 {
     // Illegal input - error messages
     if (badflag)
@@ -157,7 +162,7 @@ void display_state(char c, char* fname)
 
 
 /* Call traverse, display result line */
-void frisk(char* fname, char* dname)
+void frisk(char *fname, char *dname)
 {
     start = clock();
 
@@ -172,7 +177,7 @@ void frisk(char* fname, char* dname)
 
 
 /* Traverse selected subtree */
-void traverse(char* fname, char* dname)
+void traverse(char *fname, char *dname)
 {
     DIR *dir;
     struct dirent *entry;
@@ -185,9 +190,11 @@ void traverse(char* fname, char* dname)
     // Append to existing path string before adding child dir/file
     path[p_len++] = '/';
 
-    // Not ideal, because no error catching for opendir()
-    if (!(dir = opendir(dname)))
+    if (!(dir = opendir(dname))) {
+        if (perm)
+            printf("\nPermission denied: %s\n\n", path);
         return;
+    }
 
     while ((entry = readdir(dir))) {
 
@@ -211,7 +218,7 @@ void traverse(char* fname, char* dname)
 
 
 /* Determine whether or not to traverse given entry */
-int entry_isvalid(char* fname)
+int entry_isvalid(char *fname)
 {
     int is_valid = 1;
 
@@ -228,9 +235,9 @@ int entry_isvalid(char* fname)
 
 
 /* Execute input/filename match as necessary */
-void exec_result(char* fname, char* path)
+void exec_result(char *fname, char *path)
 {
-    printf("%s -> %s\n", fname, path);
+    printf("[%s] -> %s\n", fname, path);
 
     // Open first occurance of filename match
     if (open) {
@@ -248,7 +255,7 @@ void exec_result(char* fname, char* path)
 
 
 /* Construct shell command to open target file */
-int openfile(char* path)
+int openfile(char *path)
 {
 
     int res;
@@ -257,7 +264,7 @@ int openfile(char* path)
     size_t c_len = strlen(sh_cmd);  // Length of shell command
 
     // String to contain shell script -> open command + filepath + slot for NULLCHAR
-    char *sh_script = (char*)malloc(sizeof(char) * curr_sz + c_len + 1);
+    char *sh_script = (char *)malloc(sizeof(char) * curr_sz + c_len + 1);
 
     // Udpate current size and terminate string.
     curr_sz += c_len + 1;
@@ -275,7 +282,7 @@ int openfile(char* path)
 
 
 /* Execute shell command in forked child process */
-int fork_process(char* sh_script, char* path)
+int fork_process(char *sh_script, char *path)
 {
     pid_t pid;
     int status;
