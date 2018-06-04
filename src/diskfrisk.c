@@ -156,7 +156,7 @@ void display_state(char c, char *fname)
             printf("System directory is being frisked...\n");
         if (home || (!home && !sys))
             printf("Home directory is being frisked...\n");
-        printf("Searching for: %s\n\n", fname);
+        printf("Searching for: %s ...\n\n", fname);
     }
 }
 
@@ -243,7 +243,6 @@ void exec_result(char *fname, char *path)
     if (open) {
         if ((openfile(path)) < 0) {
             printf("Unable to open %s\n", path);
-            exit(1);
         }
 
         // Must be set back to 0, or every result will be opened.
