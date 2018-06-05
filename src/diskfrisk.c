@@ -156,7 +156,7 @@ void display_state(char c, char *fname)
             printf("System directory is being frisked...\n");
         if (home || (!home && !sys))
             printf("Home directory is being frisked...\n");
-        printf("Searching for: %s ...\n\n", fname);
+        printf("Searching for: %s \n\n", fname);
     }
 }
 
