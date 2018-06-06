@@ -58,6 +58,8 @@ Ex: ~ user$ frisk grep:<filename>
 #include <unistd.h>
 
 #define NULLCHAR  '\0'
+#define PMATCH    "grep:"         // User command to search by pattern match
+#define PM_LEN    strlen(PMATCH)  // Pattern match command length
 
 /* OSX nomenclature */
 #define HNAME     "Users"   // Home directory name
@@ -74,11 +76,13 @@ void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
 int entry_isvalid(char *fname);
+void pmatch(char *fname, char *text, char *path);
 void exec_result(char *fname, char *path);
 int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 
 /* Input flags */
+int grep = 0;
 int home = 0;        // Search the home directory/user files
 int open = 0;        // Open first occurance of filename match
 int perm = 0;        // Display permission errors
@@ -142,6 +146,10 @@ char *input(int argc, char *argv[])
         no_fn = 1;
     if (home && !sys)
         dname = HOME;
+    if (!strncmp(*argv, PMATCH, PM_LEN)) {
+        grep = 1;
+        *argv = (*argv + PM_LEN);
+    }
 
     // Update user on current state of process
     display_state(x, *argv);
@@ -166,7 +174,7 @@ void display_state(char c, char *fname)
             printf("System directory is being frisked...\n");
         if (home || (!home && !sys))
             printf("Home directory is being frisked...\n");
-        printf("Searching for: %s \n\n", fname);
+        printf("Searching for%s: %s\n\n", ((grep) ? " pattern" : ""), fname);
     }
 }
 
@@ -215,9 +223,14 @@ void traverse(char *fname, char *dname)
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
         lstat(path, &fst);
 
+        // User selected grep option, determine if file contains pattern
+        if (grep)
+            pmatch(fname, entry->d_name, path);
+
         // Recurse if no match, else handle matching result
-        if (strcmp(fname, entry->d_name) == 0) {
+        if (!grep && !strcmp(fname, entry->d_name)) {
             exec_result(fname, path);
+            found ++;
 
         } else if (S_ISDIR(fst.st_mode)) {
             traverse(fname, path);
@@ -241,6 +254,16 @@ int entry_isvalid(char *fname)
             is_valid = 0;
 
     return is_valid;
+}
+
+
+/* Display results that match input pattern  */
+void pmatch(char *currfile, char *text, char *path)
+{
+    if (strstr(text, currfile)) {
+        exec_result(currfile, path);
+        found++;
+    }
 }
 
 
