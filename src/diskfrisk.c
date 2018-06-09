@@ -1,8 +1,6 @@
 /* TODO
 
--> integrate grep search from testfile
--> Combine input flags into struct
--> Eliminate case sensitivity
+-> Eliminate default case sensitivity, create '-C' flag
 
 */
 
@@ -81,16 +79,18 @@ void exec_result(char *fname, char *path);
 int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 
-/* Input flags */
-int grep = 0;
-int home = 0;        // Search the home directory/user files
-int open = 0;        // Open first occurance of filename match
-int perm = 0;        // Display permission errors
-int sys = 0;         // Search all system files excluding home/user files
+struct option_flags {
+    int grep;        // Search by pattern match
+    int home;        // Search the home directory/user files
+    int open;        // Open first occurance of filename match
+    int perm;        // Display permission errors
+    int sys;         // Search all system files excluding home/user files
+} option;
 
-/* Error flags */
-int no_fn = 0;       // No filename
-int badflag = 0;     // Illegal flag
+struct error_flags {
+    int no_fn;       // No filename
+    int bad_flag;     // Illegal flag
+} error;
 
 int found = 0;       // Number of results
 char *dname = ROOT;  // Set by default
@@ -124,37 +124,37 @@ char *input(int argc, char *argv[])
         while ((c = *++argv[0]))
             switch (c) {
                  case 'h':
-                    home = 1;
+                    option.home = 1;
                     break;
                 case 'o':
-                    open = 1;
+                    option.open = 1;
                     break;
                 case 'p':
-                    perm = 1;
+                    option.perm = 1;
                     break;
                 case 's':
-                    sys = 1;
+                    option.sys = 1;
                     break;
                 default:
 
                     // Save illegal flag to pass in error message
                     x = c;
-                    badflag = 1;
+                    error.bad_flag = 1;
                     break;
             }
     if (argc != 1)
-        no_fn = 1;
-    if (home && !sys)
+        error.no_fn = 1;
+    if (option.home && !option.sys)
         dname = HOME;
     if (!strncmp(*argv, PMATCH, PM_LEN)) {
-        grep = 1;
+        option.grep = 1;
         *argv = (*argv + PM_LEN);
     }
 
     // Update user on current state of process
     display_state(x, *argv);
 
-    return (no_fn + badflag > 0) ? NULL : *argv;
+    return (error.no_fn + error.bad_flag > 0) ? NULL : *argv;
 }
 
 
@@ -162,19 +162,19 @@ char *input(int argc, char *argv[])
 void display_state(char c, char *fname)
 {
     // Illegal input - error messages
-    if (badflag)
+    if (error.bad_flag)
         printf("\nIllegal option '%c'\n\n", c);
-    else if (no_fn)
+    else if (error.no_fn)
         printf("\nUsage: frisk -h -s <filename>\n\n");
         
     // Legal input submitted
     else {
         printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
-        if (sys || (!home && !sys))
+        if (option.sys || (!option.home && !option.sys))
             printf("System directory is being frisked...\n");
-        if (home || (!home && !sys))
+        if (option.home || (!option.home && !option.sys))
             printf("Home directory is being frisked...\n");
-        printf("Searching for%s: %s\n\n", ((grep) ? " pattern" : ""), fname);
+        printf("Searching for%s: %s\n\n", ((option.grep) ? " pattern" : ""), fname);
     }
 }
 
@@ -209,7 +209,7 @@ void traverse(char *fname, char *dname)
     path[p_len++] = '/';
 
     if (!(dir = opendir(dname))) {
-        if (perm)
+        if (option.perm)
             printf("\nPermission denied: %s\n\n", path);
         return;
     }
@@ -224,11 +224,11 @@ void traverse(char *fname, char *dname)
         lstat(path, &fst);
 
         // User selected grep option, determine if file contains pattern
-        if (grep)
+        if (option.grep)
             pmatch(fname, entry->d_name, path);
 
         // Recurse if no match, else handle matching result
-        if (!grep && !strcmp(fname, entry->d_name)) {
+        if (!option.grep && !strcmp(fname, entry->d_name)) {
             exec_result(fname, path);
             found ++;
 
@@ -250,7 +250,7 @@ int entry_isvalid(char *fname)
             is_valid = 0;
 
     // If only "-s" is flagged
-    if (!home && sys && !(strcmp(fname, HNAME)))
+    if (!option.home && option.sys && !(strcmp(fname, HNAME)))
             is_valid = 0;
 
     return is_valid;
@@ -273,13 +273,13 @@ void exec_result(char *fname, char *path)
     printf("[%s] -> %s\n", fname, path);
 
     // Open first occurance of filename match
-    if (open) {
+    if (option.open) {
         if ((openfile(path)) < 0) {
             printf("Unable to open %s\n", path);
         }
 
         // Must be set back to 0, or every result will be opened.
-        open = 0;
+        option.open = 0;
     }
     found++;
     return;
