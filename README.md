@@ -1,6 +1,6 @@
 # DISKFRISK -- VERSION 0.0.0
 
-##Here is a short explanation of how to execute commands, with examples:
+## Here is a short explanation of how to execute commands, with examples:
 
 If no flags present, your machine's entire file tree is searched, by
 exact match.
