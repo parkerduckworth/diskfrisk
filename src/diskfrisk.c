@@ -53,22 +53,13 @@ Ex: ~ user$ frisk grep:<filename>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
+#include "sysdep.h"
 #include <sys/wait.h>
 #include <unistd.h>
 
 #define NULLCHAR  '\0'
 #define PMATCH    "grep:"         // User command to search by pattern match
 #define PM_LEN    strlen(PMATCH)  // Pattern match command length
-
-/* OSX nomenclature */
-#define HNAME     "Users"   // Home directory name
-#define HOME      "/Users"  // Home directory path
-#define ROOT      "/"       // Root directory path
-
-/* Bash syntax */
-#define RDFROMS   "-c"      // Read-from-string option
-#define SHOPEN    "open "   // Open command
-#define SHELL     "sh"      // Initiate new environment context
 
 char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
@@ -90,7 +81,7 @@ struct option_flags {
 
 struct error_flags {
     int no_fn;       // No filename
-    int bad_flag;     // Illegal flag
+    int bad_flag;    // Illegal flag
 } error;
 
 int found = 0;       // Number of results
