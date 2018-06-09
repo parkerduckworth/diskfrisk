@@ -1,6 +1,7 @@
 /* TODO
 
--> Eliminate default case sensitivity, create '-C' flag
+-> Eliminate default case sensitivity, create '-C' flag as option instead
+-> Set up CI
 
 */
 
