@@ -83,7 +83,7 @@ int fork_process(char *sh_script, char *path);
 struct option_flags {
     int grep;        // Search by pattern match
     int home;        // Search the home directory/user files
-    int open;        // Open first occurance of filename match
+    int openf;       // Open first occurance of filename match
     int perm;        // Display permission errors
     int sys;         // Search all system files excluding home/user files
 } option;
@@ -128,7 +128,7 @@ char *input(int argc, char *argv[])
                     option.home = 1;
                     break;
                 case 'o':
-                    option.open = 1;
+                    option.openf = 1;
                     break;
                 case 'p':
                     option.perm = 1;
@@ -274,13 +274,13 @@ void exec_result(char *fname, char *path)
     printf("[%s] -> %s\n", fname, path);
 
     // Open first occurance of filename match
-    if (option.open) {
+    if (option.openf) {
         if ((openfile(path)) < 0) {
             printf("Unable to open %s\n", path);
         }
 
         // Must be set back to 0, or every result will be opened.
-        option.open = 0;
+        option.openf = 0;
     }
     found++;
     return;
