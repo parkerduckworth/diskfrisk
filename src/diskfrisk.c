@@ -231,7 +231,6 @@ void traverse(char *fname, char *dname)
         // Recurse if no match, else handle matching result
         if (!option.grep && !strcmp(fname, entry->d_name)) {
             exec_result(fname, path);
-            found ++;
 
         } else if (S_ISDIR(fst.st_mode)) {
             traverse(fname, path);
@@ -263,7 +262,6 @@ void pmatch(char *currfile, char *text, char *path)
 {
     if (strstr(text, currfile)) {
         exec_result(currfile, path);
-        found++;
     }
 }
 
