@@ -25,8 +25,8 @@ char* input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
-int casecmp(char *, char *);
 int entry_isvalid(char *fname);
+int casecmp(char *, char *);
 void pmatch(char *fname, char *text, char *path);
 void exec_result(char *fname, char *path);
 int openfile(char *path);
@@ -213,17 +213,6 @@ int entry_isvalid(char *fname)
 }
 
 
-/* Display results that match input pattern  */
-void pmatch(char *currfile, char *text, char *path)
-{
-    casecmp(currfile, text);
-
-    if (strstr(text, currfile)) {
-        exec_result(currfile, path);
-    }
-}
-
-
 /* Compare user entry with filename using requested case-sensitivity */
 int casecmp(char *fname, char *entry_name)
 {  
@@ -237,6 +226,17 @@ int casecmp(char *fname, char *entry_name)
     }
 
     return (!strcmp(fname, entry_name) ? 1 : 0);
+}
+
+
+/* Display results that match input pattern  */
+void pmatch(char *currfile, char *text, char *path)
+{
+    casecmp(currfile, text);
+
+    if (strstr(text, currfile)) {
+        exec_result(currfile, path);
+    }
 }
 
 
