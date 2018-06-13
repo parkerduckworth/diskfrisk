@@ -1,6 +1,5 @@
 /* TODO
 
--> Eliminate default case sensitivity, create '-C' flag as option instead
 -> Set up CI
 
 */
@@ -22,10 +21,11 @@
 #define PMATCH    "grep:"         // User command to search by pattern match
 #define PM_LEN    strlen(PMATCH)  // Pattern match command length
 
-char *input(int argc, char *argv[]);
+char* input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
+int casecmp(char *, char *);
 int entry_isvalid(char *fname);
 void pmatch(char *fname, char *text, char *path);
 void exec_result(char *fname, char *path);
@@ -33,6 +33,7 @@ int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 
 struct option_flags {
+    int csens;       // Case-sensitive search
     int grep;        // Search by pattern match
     int home;        // Search the home directory/user files
     int openf;       // Open first occurance of filename match
@@ -76,7 +77,10 @@ char *input(int argc, char *argv[])
     while (--argc > 0 && (*++argv)[0] == '-')
         while ((c = *++argv[0]))
             switch (c) {
-                 case 'h':
+                case 'C':
+                    option.csens = 1;
+                    break; 
+                case 'h':
                     option.home = 1;
                     break;
                 case 'o':
@@ -181,7 +185,7 @@ void traverse(char *fname, char *dname)
             pmatch(fname, entry->d_name, path);
 
         // Recurse if no match, else handle matching result
-        if (!option.grep && !strcmp(fname, entry->d_name)) {
+        if (!option.grep && casecmp(fname, entry->d_name)) {
             exec_result(fname, path);
 
         } else if (S_ISDIR(fst.st_mode)) {
@@ -212,9 +216,27 @@ int entry_isvalid(char *fname)
 /* Display results that match input pattern  */
 void pmatch(char *currfile, char *text, char *path)
 {
+    casecmp(currfile, text);
+
     if (strstr(text, currfile)) {
         exec_result(currfile, path);
     }
+}
+
+
+/* Compare user entry with filename using requested case-sensitivity */
+int casecmp(char *fname, char *entry_name)
+{  
+    char *cp;
+
+    if (!option.csens) {
+        for (cp = fname; *cp; ++cp)
+            *cp = tolower(*cp);
+        for(cp = entry_name; *cp; ++cp)
+            *cp = tolower(*cp);
+    }
+
+    return (!strcmp(fname, entry_name) ? 1 : 0);
 }
 
 
