@@ -28,6 +28,8 @@ An `-o` flag is available to automatically open up the first matched
 result of search.  The search will continue, and all matches will be
 listed.
 
+Case sensitivity can be toggled on with a `-C` flag.  
+
 Directories can be searched, and set to open upon discovery as well.
 
 A `-p` flag is another option that sets all file permission errors to
@@ -39,5 +41,3 @@ pattern will be output. This can be used in conjuction with any (or all)
 of the optional flags.
 
 Ex: `~ user$ frisk grep:<filename>`
-
-
