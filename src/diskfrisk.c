@@ -216,9 +216,8 @@ int entry_isvalid(char *fname)
 /* Compare user entry with filename using requested case-sensitivity */
 int casecmp(char *fname, char *entry_name)
 {  
-    char *cp;
-
     if (!option.csens) {
+        char *cp;
         for (cp = fname; *cp; ++cp)
             *cp = tolower(*cp);
         for(cp = entry_name; *cp; ++cp)
