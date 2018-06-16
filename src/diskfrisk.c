@@ -21,7 +21,7 @@
 #define PMATCH    "grep:"         // User command to search by pattern match
 #define PM_LEN    strlen(PMATCH)  // Pattern match command length
 
-char* input(int argc, char *argv[]);
+char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
