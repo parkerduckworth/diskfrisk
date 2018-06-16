@@ -1,6 +1,7 @@
 /* TODO
 
 -> Set up CI
+-> Search for hidden files
 
 */
 
@@ -27,8 +28,7 @@ void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
 int entry_isvalid(char *fname);
 int casecmp(char *, char *);
-void pmatch(char *fname, char *text, char *path);
-void exec_result(char *fname, char *path);
+void process_match(char *fname, char *path);
 int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 
@@ -154,15 +154,16 @@ void frisk(char *fname, char *dname)
 /* Traverse selected subtree */
 void traverse(char *fname, char *dname)
 {
-    DIR *dir;
-    struct dirent *entry;
-    struct stat fst;
+    int is_match;
     char path[PATH_MAX];
     size_t p_len = strlen(dname);  // Current absolute path length
 
+    DIR *dir;
+    struct stat fst;
+    struct dirent *entry;
+
+    // Lets build this filepath
     strcpy(path, dname);
-    
-    // Append to existing path string before adding child dir/file
     path[p_len++] = '/';
 
     if (!(dir = opendir(dname))) {
@@ -176,22 +177,16 @@ void traverse(char *fname, char *dname)
         if (!entry_isvalid(entry->d_name))
             continue;
 
-        // Record absolute path and initialize fst
+        // Record absolute path and initialize stat struct
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
         lstat(path, &fst);
 
-        // User selected grep option, determine if file contains pattern
-        if (option.grep)
-            pmatch(fname, entry->d_name, path);
-
-        // Recurse if no match, else handle matching result
-        if (!option.grep && casecmp(fname, entry->d_name)) {
-            exec_result(fname, path);
-
-        } else if (S_ISDIR(fst.st_mode)) {
+        if ((is_match = casecmp(fname, entry->d_name)))
+            process_match(fname, path);
+        else if (S_ISDIR(fst.st_mode))
             traverse(fname, path);
-        } 
     }
+    
     closedir(dir);
 }
 
@@ -224,23 +219,14 @@ int casecmp(char *fname, char *entry_name)
             *cp = tolower(*cp);
     }
 
+    if (option.grep)
+        return (strstr(entry_name, fname) ? 1: 0);
     return (!strcmp(fname, entry_name) ? 1 : 0);
 }
 
 
-/* Display results that match input pattern  */
-void pmatch(char *currfile, char *text, char *path)
-{
-    casecmp(currfile, text);
-
-    if (strstr(text, currfile)) {
-        exec_result(currfile, path);
-    }
-}
-
-
 /* Execute input/filename match as necessary */
-void exec_result(char *fname, char *path)
+void process_match(char *fname, char *path)
 {
     printf("[%s] -> %s\n", fname, path);
 
@@ -253,6 +239,7 @@ void exec_result(char *fname, char *path)
         // Must be set back to 0, or every result will be opened.
         option.openf = 0;
     }
+
     found++;
     return;
 }
@@ -297,19 +284,22 @@ int fork_process(char *sh_script, char *path)
     if ((pid = fork()) < 0) {
         perror("fork");
         return -1;
-    } else if (pid == 0) {
+    }
 
-        // Child process
+    // Child process
+    else if (pid == 0) {  
         printf("\nOpening: %s\n\n", path);
         if ((execvp(SHELL, sh_tok)) < 0) {
             perror("execvp");
             return -1;
         }
-    } else {
+    }
 
-        // Parent process
+    // Wait to return to parent
+    else {  
         while (wait(&status) != pid)
             ;
     }
+
     return 0;
 }
