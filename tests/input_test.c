@@ -1,4 +1,4 @@
-// gcc input_test.c -o input_test -lcunit
+// gcc input_test.c -o test_execs/input_test -lcunit
 
 #include <CUnit/Basic.h>
 
