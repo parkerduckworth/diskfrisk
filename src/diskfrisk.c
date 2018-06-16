@@ -27,7 +27,7 @@ void display_state(char c, char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
 int entry_isvalid(char *fname);
-int casecmp(char *, char *);
+int compare_entry(char *, char *);
 void process_match(char *fname, char *path);
 int openfile(char *path);
 int fork_process(char *sh_script, char *path);
@@ -154,10 +154,8 @@ void frisk(char *fname, char *dname)
 /* Traverse selected subtree */
 void traverse(char *fname, char *dname)
 {
-    int is_match;
     char path[PATH_MAX];
     size_t p_len = strlen(dname);  // Current absolute path length
-
     DIR *dir;
     struct stat fst;
     struct dirent *entry;
@@ -180,7 +178,7 @@ void traverse(char *fname, char *dname)
         strncpy(path + p_len, entry->d_name, PATH_MAX - p_len);
         lstat(path, &fst);
 
-        if ((is_match = casecmp(fname, entry->d_name)))
+        if (compare_entry(fname, entry->d_name))
             process_match(fname, path);
         else if (S_ISDIR(fst.st_mode))
             traverse(fname, path);
@@ -207,8 +205,8 @@ int entry_isvalid(char *fname)
 }
 
 
-/* Compare user entry with filename using requested case-sensitivity */
-int casecmp(char *fname, char *entry_name)
+/* Compare user input with current entry */
+int compare_entry(char *fname, char *entry_name)
 {  
     if (!option.csens) {
         char *cp;
