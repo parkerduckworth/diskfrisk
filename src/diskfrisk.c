@@ -173,7 +173,6 @@ void traverse(char *fname, char *dname)
     }
 
     while ((entry = readdir(dir))) {
-
         if (!entry_isvalid(entry->d_name))
             continue;
 
