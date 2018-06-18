@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <limits.h>
+#include "prototypes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,17 +21,6 @@
 #define NULLCHAR  '\0'
 #define PMATCH    "grep:"         // User command to search by pattern match
 #define PM_LEN    strlen(PMATCH)  // Pattern match command length
-
-char *input(int argc, char *argv[]);
-void display_state(char c, char *fname);
-void frisk(char *fname, char *dname);
-void traverse(char *fname, char *dname);
-int entry_isvalid(char *fname);
-int casecmp(char *, char *);
-void pmatch(char *fname, char *text, char *path);
-void exec_result(char *fname, char *path);
-int openfile(char *path);
-int fork_process(char *sh_script, char *path);
 
 struct option_flags {
     int csens;       // Case-sensitive search
@@ -46,27 +36,12 @@ struct error_flags {
     int bad_flag;    // Illegal flag
 } error;
 
+int test = 0;
 int found = 0;       // Number of results
 char *dname = ROOT;  // Set by default
 
 clock_t start, end;
 double t_elapsed;
-
-
-int main(int argc, char *argv[])
-{
-    char *fname;
-
-    if ((fname = input(argc, argv)) == NULL)
-        return -1;
-
-    frisk(fname, dname);
-    
-    if (found < 1)
-        printf("%s not found...\n\n", fname);
-
-    return 0;
-}
 
 
 /* Collect user input, parse optional flags */
@@ -107,6 +82,9 @@ char *input(int argc, char *argv[])
         option.grep = 1;
         *argv = (*argv + PM_LEN);
     }
+
+    if (test)
+        return NULL;
 
     // Update user on current state of process
     display_state(x, *argv);
