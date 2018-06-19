@@ -1,7 +1,11 @@
+# Directories
+tests/test_execs
 .vscode/*
 tests/test_execs/*
 
+# Files
 .DS_Store
 
+# Extensions
 *.out
 *.o
