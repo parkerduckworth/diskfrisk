@@ -1,5 +1,5 @@
-#ifndef PROTOTYPES_H_INCLUDED
-#define PROTOTYPES_H_INCLUDED
+#ifndef PROTOTYPES_H
+#define PROTOTYPES_H
 
 char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
