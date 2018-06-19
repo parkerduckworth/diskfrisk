@@ -2,9 +2,11 @@
 
 ## Here is a short explanation of how to execute commands, with examples:
 
-To use the following example commands verbatim, compile diskfrisk.c to an 
-executble and set it to $PATH.  Otherwise, execute commands with `./a.out` 
-or `./frisk`
+To use the following example commands verbatim, compile with
+`gcc diskfrisk.c main.c -o <path>/frisk`
+and set it to $PATH.  
+Otherwise, execute commands with `./a.out` 
+or `./frisk`.
 
 If no flags present, your machine's entire file tree is searched, by
 exact match.
