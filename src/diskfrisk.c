@@ -85,13 +85,11 @@ char *input(int argc, char *argv[])
         *argv = (*argv + PM_LEN);
     }
 
-    if (test)
-        return NULL;
-
     // Update user on current state of process
-    display_state(x, *argv);
+    if (!test)
+        display_state(x, *argv);
 
-    return (error.no_fn + error.bad_flag > 0) ? NULL : *argv;
+    return (error.no_fn + error.bad_flag) ? NULL : *argv;
 }
 
 
