@@ -14,9 +14,6 @@ int main(int argc, char *argv[])
         return -1;
 
     frisk(fname, dname);
-    
-    if (found < 1)
-        printf("%s not found...\n\n", fname);
 
     return 0;
 }

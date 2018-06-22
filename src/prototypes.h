@@ -3,6 +3,9 @@
 
 char *input(int argc, char *argv[]);
 void display_state(char c, char *fname);
+void initial_state(char *fname);
+void display_err(char c);
+void result_line(char *fname);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
 int entry_isvalid(char *fname);
