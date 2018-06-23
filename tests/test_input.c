@@ -1,18 +1,24 @@
 /* 
     Compile Tests:
-        cc input_test.c -o test_execs/input_test -lcunit
+        cc test_input.c -o test_execs/test_input -lcunit
 
     Execute Tests:
-        test_execs/input_test
+        test_execs/test_input
 */
 
 #include <CUnit/Basic.h>
+#include "../src/display.c"
 #include "../src/diskfrisk.c"
+#include "../src/extern.h"
 #include "../src/prototypes.h"
 #include "../src/sysdep.h"
 #include <stdio.h>
 
 #define TFNAME "TEST"  // <filename> used for testing
+
+extern int test;
+extern int found;
+extern char *dname;
 
 char *pmatch_input;    // Test string representing pattern match input
 
@@ -99,7 +105,7 @@ int main()
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
-    pSuite = CU_add_suite("Input Test Suite", init_inputtest_suite, clean_inputtest_suite);
+    pSuite = CU_add_suite("input() Test Suite", init_inputtest_suite, clean_inputtest_suite);
     if (NULL == pSuite) {
         CU_cleanup_registry();
         return CU_get_error();

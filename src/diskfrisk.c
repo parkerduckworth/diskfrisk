@@ -3,11 +3,15 @@
 -> Set up CI
 -> Write remaining unit tests
 -> Search for hidden files
+-> Store options into config file, so search settings can persist,
+   Create interactive options menu to set
+-> Write makefile
 
 */
 
 #include <ctype.h>
 #include <dirent.h>
+#include "extern.h"
 #include <limits.h>
 #include "prototypes.h"
 #include <stdio.h>
@@ -24,32 +28,14 @@
 #define PMATCH    "grep:"         // User command to search by pattern match
 #define PM_LEN    strlen(PMATCH)  // Pattern match command length
 
-struct option_flags {
-    int csens;       // Case-sensitive search
-    int grep;        // Search by pattern match
-    int home;        // Search the home directory/user files
-    int openf;       // Open first occurance of filename match
-    int perm;        // Display permission errors
-    int sys;         // Search all system files excluding home/user files
-} option;
-
-struct error_flags {
-    int no_fn;       // No filename
-    int bad_flag;    // Illegal flag
-} error;
-
-int test = 0;
-int found = 0;       // Number of results
-char *dname = ROOT;  // Set by default
-
-clock_t start, end;
-double t_elapsed;
+extern int found;
+extern char *dname;
 
 
 /* Collect user input, parse optional flags */
 char *input(int argc, char *argv[])
 {
-    char c, x = 0;
+    char c, x = 1;
 
     while (--argc > 0 && (*++argv)[0] == '-')
         while ((c = *++argv[0]))
@@ -76,41 +62,19 @@ char *input(int argc, char *argv[])
                     error.bad_flag = 1;
                     break;
             }
+            
+    dname = ((option.home && !option.sys)? HOME: ROOT);
     if (argc != 1)
         error.no_fn = 1;
-    if (option.home && !option.sys)
-        dname = HOME;
     if (!strncmp(*argv, PMATCH, PM_LEN)) {
         option.grep = 1;
         *argv = (*argv + PM_LEN);
     }
 
     // Update user on current state of process
-    if (!test)
-        display_state(x, *argv);
+    display_state(x, *argv);
 
     return (error.no_fn + error.bad_flag) ? NULL : *argv;
-}
-
-
-/* Output current state to user */
-void display_state(char c, char *fname)
-{
-    // Illegal input - error messages
-    if (error.bad_flag)
-        printf("\nIllegal option '%c'\n\n", c);
-    else if (error.no_fn)
-        printf("\nUsage: frisk -h -s <filename>\n\n");
-        
-    // Legal input submitted
-    else {
-        printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
-        if (option.sys || (!option.home && !option.sys))
-            printf("System directory is being frisked...\n");
-        if (option.home || (!option.home && !option.sys))
-            printf("Home directory is being frisked...\n");
-        printf("Searching for%s: %s\n\n", ((option.grep) ? " pattern" : ""), fname);
-    }
 }
 
 
@@ -124,8 +88,7 @@ void frisk(char *fname, char *dname)
     end = clock();
     t_elapsed = ((double)(end-start)) / CLOCKS_PER_SEC;
 
-    printf("\n%d result%s, in %.2f seconds.\n\n", found, 
-        ((found != 1) ? "s" : ""), t_elapsed);
+    display_state(NULLCHAR, fname);
 }
 
 
