@@ -21,6 +21,7 @@ function dfstart() {
 # Update changes to source
 function dfupdate() {
     printf "Updating DISKFRISK...\n"
-    cc ~/diskfrisk/src/diskfrisk.c ~/diskfrisk/src/main.c -o ~/diskfrisk/bin/frisk
+    cc ~/diskfrisk/src/main.c ~/diskfrisk/src/diskfrisk.c ~/diskfrisk/src/display.c 
+        -o ~/diskfrisk/bin/frisk
     printf "Update complete.\n"
 }

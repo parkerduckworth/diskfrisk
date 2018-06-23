@@ -7,12 +7,18 @@
 */
 
 #include <CUnit/Basic.h>
+#include "../src/display.c"
 #include "../src/diskfrisk.c"
+#include "../src/extern.h"
 #include "../src/prototypes.h"
 #include "../src/sysdep.h"
 #include <stdio.h>
 
 #define TFNAME "TEST"  // <filename> used for testing
+
+extern int test;
+extern int found;
+extern char *dname;
 
 char *pmatch_input;    // Test string representing pattern match input
 
