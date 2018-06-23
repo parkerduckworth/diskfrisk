@@ -49,5 +49,5 @@ void display_err(char c)
     if (error.bad_flag)
         printf("\nIllegal option '%c'\n\n", c);
     else if (error.no_fn)
-        printf("\nUsage: frisk -h -s <filename>\n\n");
+        printf("\nUsage: find -h -s <filename>\n\n");
 }
