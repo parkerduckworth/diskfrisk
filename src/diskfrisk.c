@@ -1,11 +1,15 @@
 /* TODO
 
+-> Integrate JSMN
 -> Set up CI
+-> Polish up readme
 -> Write remaining unit tests
 -> Search for hidden files
--> Store options into config file, so search settings can persist,
-   Create interactive options menu to set
+-> Store options into config file, so search settings can persist
+-> Create interactive options menu to set
 -> Write makefile
+    - compiile execs to /bin on make
+-> Display all active options from config file for each search
 
 */
 
@@ -30,7 +34,6 @@
 
 extern int found;
 extern char *dname;
-
 
 /* Collect user input, parse optional flags */
 char *input(int argc, char *argv[])
@@ -64,8 +67,10 @@ char *input(int argc, char *argv[])
             }
             
     dname = ((option.home && !option.sys)? HOME: ROOT);
-    if (argc != 1)
+    if (argc != 1) {
+        x = -1;
         error.no_fn = 1;
+    }
     if (!strncmp(*argv, PMATCH, PM_LEN)) {
         option.grep = 1;
         *argv = (*argv + PM_LEN);
@@ -121,7 +126,7 @@ void traverse(char *fname, char *dname)
 
         if (compare_entry(fname, entry->d_name))
             process_match(fname, path);
-        else if (S_ISDIR(fst.st_mode))
+        if (S_ISDIR(fst.st_mode))
             traverse(fname, path);
     }
     
@@ -159,7 +164,7 @@ int compare_entry(char *fname, char *entry_name)
 
     if (option.grep)
         return (strstr(entry_name, fname) ? 1: 0);
-    return (!strcmp(fname, entry_name) ? 1 : 0);
+    return (!strcmp(entry_name, fname) ? 1 : 0);
 }
 
 

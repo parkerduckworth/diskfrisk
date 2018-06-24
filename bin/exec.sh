@@ -2,13 +2,13 @@
 
 # source ~/diskfrisk/bin/exec.sh
 
-# Run the application
+# Run the application recursively
 function dfstart() {
-    printf "DISKFRISK INITIATED\n"
+    echo "DISKFRISK INITIATED"
     while true; do
-        printf "________________________________________________\n"
-        printf "Enter search, or \"options\" for more information.\n"
-        printf ":"
+        echo "_______________________________________________"
+        echo "Enter search, or \"settings\" for more options"
+        printf "DISKFRISK$ "
         read search
         if [ "$search" = "q" ]; then
             echo "exiting..."
@@ -18,10 +18,9 @@ function dfstart() {
     done
 }
 
-# Update changes to source
-function dfupdate() {
-    printf "Updating DISKFRISK...\n"
-    cc ~/diskfrisk/src/main.c ~/diskfrisk/src/diskfrisk.c ~/diskfrisk/src/display.c 
-        -o ~/diskfrisk/bin/frisk
-    printf "Update complete.\n"
+function dfmake() {
+    echo "Making DISKFRISK..."
+    cc ~/diskfrisk/src/main.c ~/diskfrisk/src/diskfrisk.c ~/diskfrisk/src/display.c \
+        -o ~/diskfrisk/bin/find
+    echo "Make complete."
 }

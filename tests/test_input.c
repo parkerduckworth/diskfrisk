@@ -24,7 +24,9 @@ char *pmatch_input;    // Test string representing pattern match input
 
 int init_inputtest_suite(void)
 {
+    // Freed in clean_inputtest_suite
     pmatch_input = malloc(sizeof(char) * (PM_LEN + strlen(TFNAME) + 1));
+
     strcat(pmatch_input, PMATCH);
     strcat(pmatch_input, TFNAME);
     *(pmatch_input + PM_LEN + strlen(TFNAME) + 1) = NULLCHAR;

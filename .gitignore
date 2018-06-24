@@ -4,7 +4,7 @@ tests/test_execs
 
 # Files
 .DS_Store
-bin/frisk
+bin/find
 
 # Extensions
 *.out
