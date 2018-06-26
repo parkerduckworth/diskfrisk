@@ -1,7 +1,5 @@
 # Makefile for find executable
 
-# VPATH = SRC INCLUDE
-
 main.o:         src/extern.h src/prototypes.h src/sysdep.h src/main.c
                 gcc -c src/main.c 
 diskfrisk.o:    src/extern.h src/prototypes.h src/sysdep.h src/diskfrisk.c
