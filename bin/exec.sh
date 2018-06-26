@@ -6,7 +6,7 @@
 function dfstart() {
     echo "DISKFRISK INITIATED"
     while true; do
-        echo "_______________________________________________"
+        echo "____________________________________________"
         echo "Enter search, or \"settings\" for more options"
         printf "DISKFRISK$ "
         read search
@@ -20,7 +20,9 @@ function dfstart() {
 
 function dfmake() {
     echo "Making DISKFRISK..."
-    cc ~/diskfrisk/src/main.c ~/diskfrisk/src/diskfrisk.c ~/diskfrisk/src/display.c \
-        -o ~/diskfrisk/bin/find
+    curr=$(pwd)
+    cd ~/diskfrisk
+    make find
     echo "Make complete."
+    cd $curr
 }
