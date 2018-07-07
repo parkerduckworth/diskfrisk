@@ -36,7 +36,7 @@ Ex. -
 ## Code Example
 To initiate DISKFRISK, enter `dfstart`.
 ```
-user$ dfstart
+USER-MBP:~ user$ dfstart
 DISKFRISK INITIATED
 ____________________________________________
 Enter search, or "settings" for more options
@@ -106,11 +106,18 @@ Example:
 - search for any file matching the pattern "unix", with the home directory as base, 
 auto-open the first match, and display all file permission errors.
 ```
-USER-MBP:~ user$ dfstart
-DISKFRISK INITIATED
 ____________________________________________
 Enter search, or "settings" for more options
 DISKFRISK$ find -hop grep:unix
+
+
+DISKFRISK -- VERSION 0.0.0
+
+
+Home directory is being frisked...
+Searching for pattern: unix
+
+
 ```
 > This shows how options can be combined into a single flag. Options can 
 > appear in any order and be combined together.  If not combined, they must 
