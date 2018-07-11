@@ -1,0 +1,8 @@
+{
+  "auto open": false,
+  "pattern match": true,
+  "case sensitivity": false,
+  "permission errors": false,
+  "search user files": true,
+  "search system files": false
+}

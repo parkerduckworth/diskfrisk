@@ -3,7 +3,7 @@
 # source ~/diskfrisk/bin/exec.sh
 
 # Run the application recursively
-function dfstart() {
+function f() {
     echo "DISKFRISK INITIATED"
     while true; do
         echo "____________________________________________"
@@ -14,7 +14,7 @@ function dfstart() {
             echo "exiting..."
             return 0
         fi
-        ~/diskfrisk/bin/$search
+        ~/diskfrisk/bin/find $search
     done
 }
 
