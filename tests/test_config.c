@@ -11,41 +11,62 @@
 #include "../src/extern.h"
 #include <stdio.h>
 
-#define TFNAME   "TEST"             // <filename> used for testing
-
 extern int test;
 extern int found;
 
-FILE *t_config_file;
-char *cfile_loc = "../config.json";  // path to config file
-char *test_cfile_loc = "temp/test_config.json";
+int truthify(FILE*);
 
-int test_csens;
-int test_grep;
-int test_home;
-int test_openf;
-int test_perm;
-int test_sys;
+char *cfile_loc = "../config.json";           // Original config file path
+char *t_cfile_loc = "temp/test_config.json";  // Temp config file path
 
-int make_test_file()
+struct test_options {
+    int t_csens;
+    int t_grep;
+    int t_home;
+    int t_openf;
+    int t_perm;
+    int t_sys;
+} t_option;
+
+/* Copy config file to temp for testing */
+int make_test_file(void)
 {
-    FILE *orig;
+    FILE *t_fp, *orig_fp; // Temp and original config files
     char c;
 
-    if ((orig = fopen(cfile_loc, "r")) == NULL) {
+    if ((orig_fp = fopen(cfile_loc, "r")) == NULL) {
         perror("open");
         return 1;
     }
-    if ((t_config_file = fopen(test_cfile_loc, "w")) == NULL) {
+    if ((t_fp = fopen(t_cfile_loc, "w+")) == NULL) {
         perror("open");
         return 1;
     }
 
-    while((c = getc(orig)) != EOF)
-        putc(c, t_config_file);
+    while((c = getc(orig_fp)) != EOF)
+        putc(c, t_fp);
 
-    fclose(orig);
-    fclose(t_config_file);
+    rewind(t_fp);
+    truthify(t_fp);
+
+    fclose(orig_fp);
+    fclose(t_fp);
+
+    return 0;
+}
+
+int truthify(FILE* fp)
+{
+    char *f_contents = pull_file(t_cfile_loc);
+    char *to_replace = "false";
+    char *replacement = "true ";
+
+    char *pos;
+
+    while ((pos = strstr(f_contents, to_replace)) != NULL)
+        strncpy(pos, replacement, strlen(replacement));
+
+    fprintf(fp, "%s", f_contents);
 
     return 0;
 }
@@ -53,13 +74,15 @@ int make_test_file()
 
 int init_config_suite(void)
 {
-    test_csens = option.csens;
-    test_grep = option.grep;
-    test_home = option.home;
-    test_openf = option.openf;
-    test_perm = option.perm;
-    test_sys = option.sys;
+    // Save existing config settings
+    t_option.t_csens = option.csens;
+    t_option.t_grep = option.grep;
+    t_option.t_home = option.home;
+    t_option.t_openf = option.openf;
+    t_option.t_perm = option.perm;
+    t_option.t_sys = option.sys;
 
+    // Test will attempt to set all options to 1, zero them out beforehand.
     option.csens = 0;
     option.grep = 0;
     option.home = 0;
@@ -67,29 +90,26 @@ int init_config_suite(void)
     option.perm = 0;
     option.sys = 0;
 
+
     if (make_test_file() != 0)
         return -1;
 
     return 0;
 }
 
-void truthify(void)  // Find first occurance of false and change to true
-{
-    return;
-}
-
 
 int clean_config_suite(void)
 {
-    option.csens = test_csens;
-    option.grep = test_grep;
-    option.home = test_home;
-    option.openf = test_openf;
-    option.perm = test_perm;
-    option.sys = test_sys;
+    // Reset previous config settings
+    option.csens = t_option.t_csens;
+    option.grep = t_option.t_grep;
+    option.home = t_option.t_home;
+    option.openf = t_option.t_openf;
+    option.perm = t_option.t_perm;
+    option.sys = t_option.t_sys;
 
-    if (remove(test_cfile_loc) != 0) {
-        printf("Unable to remove %s\n", test_cfile_loc);
+    if (remove(t_cfile_loc) != 0) {
+        printf("Unable to remove %s\n", t_cfile_loc);
         return -1;
     }
 
@@ -99,11 +119,9 @@ int clean_config_suite(void)
 
 void config_file_test(void)
 {
-    int res;
-    if ((res = set_config(test_cfile_loc)) > 0)
+    int ret;
+    if ((ret = set_config(t_cfile_loc)) > 0)
         CU_FAIL("Invalid configuration file");
-
-    // Write to test_config.json, change all false -> true
 
     CU_ASSERT_EQUAL(option.csens, 1);
     CU_ASSERT_EQUAL(option.grep, 1);

@@ -11,13 +11,13 @@
 // char *config_file = "../config.json";
 
 
-char* pull_cfile(char *c_file)
+char* pull_file(char *fname)
 {
     FILE *fp;
     char *buf;
     size_t sz;
 
-    fp = fopen(c_file, "r");
+    fp = fopen(fname, "r");
     fseek(fp, 0L, SEEK_END);
     sz = ftell(fp);
 
@@ -42,26 +42,13 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 
 int set_config(char *c_file)
 {
-
-
-// enum option {
-//     auto_open,
-//     p_match,
-//     c_sens,
-//     user,
-//     sys
-// };
-
-
     int i;
 	int r;
     char *config;
 	jsmn_parser p;
 	jsmntok_t t[128]; /* We expect no more than 128 tokens */
 
-    config = pull_cfile(c_file);
-
-
+    config = pull_file(c_file);
 
 	jsmn_init(&p);
 	r = jsmn_parse(&p, config, strlen(config), t, sizeof(t)/sizeof(t[0]));
