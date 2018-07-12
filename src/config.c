@@ -5,12 +5,52 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_TOKENS 256
-#define BUFFER_SIZE 1028
+int set_config(char *c_file);
+char* pull_file(char *fname);
+static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config);
+static int eval_json(char *config, jsmntok_t *tok_key, jsmntok_t *tok_val, const char *opt_name);
+static int jsoneq(const char *json, jsmntok_t *tok, const char *s);
 
-// char *config_file = "../config.json";
+/* Option names must remain in order with config.json 
+ * TODO: Dynamically generate this list.
+ */
+const char* options[] = {"auto open", "pattern match", "case sensitivity", "permission errors", 
+                            "search user files", "search system files"};
 
 
+int set_config(char *c_file)
+{
+    int i, j, opt;
+    char *config;
+	jsmn_parser p;
+    jsmnerr_t ret;
+    jsmntok_t *tp;
+	jsmntok_t t[128];  /* We expect no more than 128 tokens */
+
+    tp = t;
+    config = pull_file(c_file);
+
+	jsmn_init(&p);
+	ret = jsmn_parse(&p, config, strlen(config), t, sizeof(t)/sizeof(t[0]));
+	if (ret < 0) {
+		printf("Failed to parse JSON: %d\n", ret);
+		return 1;
+	}
+
+	/* Assume the top-level element is an object */
+	if (ret < 1 || t[0].type != JSMN_OBJECT) {
+		printf("Object expected\n");
+		return 1;
+	}
+
+    set_option(ret, tp, config);
+    free(config);
+
+    return 0;
+}
+
+
+/* Fill an array with file contents. */
 char* pull_file(char *fname)
 {
     FILE *fp;
@@ -21,6 +61,7 @@ char* pull_file(char *fname)
     fseek(fp, 0L, SEEK_END);
     sz = ftell(fp);
 
+    // You are responsible for freeing 'buf' when it is passed to another function
     buf = malloc(sizeof(char) * sz + 1);
     *(buf + sz + 1) = '\0';
 
@@ -32,102 +73,67 @@ char* pull_file(char *fname)
     return buf;
 }
 
+
+static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
+{
+    int i, j, opt;
+    
+    /* Loop over all keys of the root object */
+	for (i = 1, j = 0; i < ret; i++, j++) {
+        if ((opt = eval_json(config, &t[i], &t[i + 1], options[j])) != 0) {
+
+            // Cases must be listed in order with lines in config.json
+            switch(j) {
+                case 0:
+                    option.openf = (opt) ? 1 : 0;
+                    break;
+                case 1:
+                    option.grep = (opt) ? 1 : 0;
+                    break;
+                case 2:
+                    option.csens = (opt) ? 1 : 0;
+                    break;
+                case 3:
+                    option.perm = (opt) ? 1 : 0;
+                    break;
+                case 4:
+                    option.home = (opt) ? 1 : 0;
+                    break;
+                case 5:
+                    option.sys = (opt) ? 1 : 0;
+                    break;
+                default:
+
+                    // Will only occur if for loop fails to iterate through 'j'
+                    printf("Error log: set_config() in config.c failed.\n");
+                    exit(1);
+            }
+        }
+        i++; // Skip to next key, value pair (&t[i], &t[i+1])
+	}
+    return 0;
+}
+
+
+static int eval_json(char *config, jsmntok_t *tok_key, jsmntok_t *tok_val, const char *opt_name)
+{
+    int ret = 0;
+    if (jsoneq(config, tok_key, opt_name) == 0) {
+            if (!strncmp("true", config + tok_val->start, tok_val->end-tok_val->start))
+			    ret++;
+            else if (!strncmp("false", config + tok_val->start, tok_val->end-tok_val->start))
+                ret--;
+            else
+                printf("Error log: Invalid value for \"%s\" in config.json\n", opt_name);
+        }
+    return ret;
+}
+
+
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
 			strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
 		return 0;
 	}
 	return -1;
-}
-
-int set_config(char *c_file)
-{
-    int i;
-	int r;
-    char *config;
-	jsmn_parser p;
-	jsmntok_t t[128]; /* We expect no more than 128 tokens */
-
-    config = pull_file(c_file);
-
-	jsmn_init(&p);
-	r = jsmn_parse(&p, config, strlen(config), t, sizeof(t)/sizeof(t[0]));
-	if (r < 0) {
-		printf("Failed to parse JSON: %d\n", r);
-		return 1;
-	}
-
-	/* Assume the top-level element is an object */
-	if (r < 1 || t[0].type != JSMN_OBJECT) {
-		printf("Object expected\n");
-		return 1;
-	}
-
-
-	/* Loop over all keys of the root object */
-	for (i = 1; i < r; i++) {
-		if (jsoneq(config, &t[i], "auto open") == 0) {
-            if (!strncmp("true", config + t[i+1].start, t[i+1].end-t[i+1].start))
-			    option.openf = 1;
-            else if (!strncmp("false", config + t[i+1].start, t[i+1].end-t[i+1].start))
-                option.openf = 0;
-            else
-                printf("Invalid value for \"auto open\" in settings.\n");
-			i++;
-        }
-		if (jsoneq(config, &t[i], "pattern match") == 0) {
-            if (!strncmp("true", config + t[i+1].start, t[i+1].end-t[i+1].start))
-			    option.grep = 1;
-            else if (!strncmp("false", config + t[i+1].start, t[i+1].end-t[i+1].start))
-                option.grep = 0;
-            else
-                printf("Invalid value for \"patttern match\" in settings.\n");
-			i++;
-        }        
-		if (jsoneq(config, &t[i], "case sensitivity") == 0) {
-            if (!strncmp("true", config + t[i+1].start, t[i+1].end-t[i+1].start))
-			    option.csens = 1;
-            else if (!strncmp("false", config + t[i+1].start, t[i+1].end-t[i+1].start))
-                option.csens = 0;
-            else
-                printf("Invalid value for \"case sensitivity\" in settings.\n");
-			i++;
-        }
-		if (jsoneq(config, &t[i], "permission errors") == 0) {
-            if (!strncmp("true", config + t[i+1].start, t[i+1].end-t[i+1].start))
-			    option.perm = 1;
-            else if (!strncmp("false", config + t[i+1].start, t[i+1].end-t[i+1].start))
-                option.perm = 0;
-            else
-                printf("Invalid value for \"permission errors\" in settings.\n");
-			i++;
-        }
-		if (jsoneq(config, &t[i], "search user files") == 0) {
-            if (!strncmp("true", config + t[i+1].start, t[i+1].end-t[i+1].start))
-			    option.home = 1;
-            else if (!strncmp("false", config + t[i+1].start, t[i+1].end-t[i+1].start))
-                option.home = 0;
-            else
-                printf("Invalid value for \"search user files\" in settings.\n");
-			i++;
-        }
-		if (jsoneq(config, &t[i], "search system files") == 0) {
-            if (!strncmp("true", config + t[i+1].start, t[i+1].end-t[i+1].start))
-			    option.sys = 1;
-            else if (!strncmp("false", config + t[i+1].start, t[i+1].end-t[i+1].start))
-                option.sys = 0;
-            else
-                printf("Invalid value for \"search system files\" in settings.\n");
-			i++;
-        }
-
-        /* Error catch for invalid key */
-        //  if () {
-		// 	printf("Unexpected key: %.*s\n", t[i].end-t[i].start,
-		// 			config + t[i].start);
-		// }
-	}
-
-    free(config);
-    return 0;
 }

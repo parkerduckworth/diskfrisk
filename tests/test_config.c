@@ -67,6 +67,7 @@ int truthify(FILE* fp)
         strncpy(pos, replacement, strlen(replacement));
 
     fprintf(fp, "%s", f_contents);
+    free(f_contents);
 
     return 0;
 }
