@@ -6,18 +6,17 @@
 #include "extern.h"
 #include "jsmn.h"
 #include "jsmn.c"
-#include "prototypes.h"
 
-static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config);
+static unsigned int set_option(jsmnerr_t ret, jsmntok_t *t, char *config);
+static unsigned int jsoneq(const char *json, jsmntok_t *tok, const char *s);
 static int eval_json(char *config, jsmntok_t *tok_key, jsmntok_t *tok_val, const char *opt_name);
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s);
 
 int set_config(char *c_file)
 {
     int i, j, opt;
     char *config;
 	jsmn_parser p;
-    jsmnerr_t ret;
+    jsmnerr_t r;
     jsmntok_t *tp;
 	jsmntok_t t[128];  /* We expect no more than 128 tokens */
 
@@ -25,22 +24,22 @@ int set_config(char *c_file)
     config = pull_file(c_file);
 
 	jsmn_init(&p);
-	ret = jsmn_parse(&p, config, strlen(config), t, sizeof(t)/sizeof(t[0]));
-	if (ret < 0) {
-		printf("Failed to parse JSON: %d\n", ret);
+	r = jsmn_parse(&p, config, strlen(config), t, sizeof(t)/sizeof(t[0]));
+	if (r < 0) {
+		printf("Failed to parse JSON: %d\n", r);
 		return 1;
 	}
 
-	/* Assume the top-level element is an object */
-	if (ret < 1 || t[0].type != JSMN_OBJECT) {
+	// Assume the top-level element is an object
+	if (r < 1 || t[0].type != JSMN_OBJECT) {
 		printf("Object expected\n");
 		return 1;
 	}
 
-    set_option(ret, tp, config);
+    opt = set_option(r, tp, config);
     free(config);
 
-    return 0;
+    return opt;
 }
 
 
@@ -68,7 +67,7 @@ char* pull_file(char *fname)
 }
 
 
-static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
+static unsigned int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
 {
     int i, j, opt;
 
@@ -78,7 +77,7 @@ static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
     const char* options[] = {"auto open", "pattern match", "case sensitivity", "permission errors", 
                                 "search user files", "search system files"};
         
-    /* Loop over all keys of the root object */
+    // Loop over all keys of the root object
 	for (i = 1, j = 0; i < ret; i++, j++) {
         if ((opt = eval_json(config, &t[i], &t[i + 1], options[j])) != 0) {
 
@@ -103,13 +102,14 @@ static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
                     option.sys = (opt > 0) ? 1 : 0;
                     break;
                 default:
-
                     // Will only occur if for loop fails to iterate through 'j'
                     printf("Error log: set_config() in config.c failed\n");
                     exit(1);
             }
-        } else
+        } else {
             printf("Error log: Option %s not set\n", options[j]);
+            return 1;
+        }
         i++; // Skip to next key, value pair (&t[i], &t[i+1])
 	}
     return 0;
@@ -131,16 +131,18 @@ static int eval_json(char *config, jsmntok_t *tok_key, jsmntok_t *tok_val, const
 }
 
 
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+static unsigned int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
 			strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
 		return 0;
 	}
-	return -1;
+	return 1;
 }
 
 
-/* Allows diskfrisk to be initialized within any directory */
+/* Allows config file to be accessed from within any directory 
+ * You must free 'abspath' when passed to another function
+ */
 char *build_cfile_path(char *path)
 {
     char *abspath = malloc(sizeof(char) * PATH_MAX);
@@ -153,3 +155,4 @@ char *build_cfile_path(char *path)
 
     return abspath;
 }
+

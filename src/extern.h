@@ -4,6 +4,19 @@
 #include <time.h>
 #include "sysdep.h"
 
+    #ifndef CONFIG_PATH
+    #define CONFIG_PATH "/diskfrisk/config.json"
+    #endif
+
+char* input(int argc, char *argv[]);
+void frisk(char *fname, char *dname);
+void traverse(char *fname, char *dname);
+int openfile(char *path);
+void display_state(char c, char *fname);
+char *build_cfile_path(char *path);
+int set_config(char *c_file);
+char* pull_file(char *fname);
+
 struct option_flags {
     int csens;       // Case-sensitive search
     int grep;        // Search by pattern match

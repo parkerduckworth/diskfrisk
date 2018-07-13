@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "extern.h"
-#include "prototypes.h"
 #include "sysdep.h"
-
-#define CONFIG_PATH "/diskfrisk/config.json"
 
 
 int main(int argc, char *argv[])
@@ -15,7 +12,11 @@ int main(int argc, char *argv[])
 
 
     char *c_file_loc = build_cfile_path(CONFIG_PATH);
-    set_config(c_file_loc);
+
+    if (set_config(c_file_loc) > 0) {
+        free(c_file_loc);
+        return -1;
+    }
     free(c_file_loc);
 
     if ((fname = input(argc, argv)) == NULL)

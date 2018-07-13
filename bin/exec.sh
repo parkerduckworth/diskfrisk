@@ -9,12 +9,17 @@ function f() {
         echo "____________________________________________"
         echo "Enter search, or \"settings\" for more options"
         printf "DISKFRISK$ "
-        read search
-        if [ "$search" = "q" ]; then
+        read input
+        if [ "$input" = "q" ]
+        then
             echo "exiting..."
             return 0
+        elif [ "$input" = "settings" ]
+        then
+            ~/diskfrisk/bin/settings
+        else
+            ~/diskfrisk/bin/find $input
         fi
-        ~/diskfrisk/bin/find $search
     done
 }
 
@@ -23,7 +28,7 @@ function dfmake() {
     echo "Making DISKFRISK..."
     curr=$(pwd)
     cd ~/diskfrisk
-    make find
-    echo "Make complete."
+    make
+    echo "Make finished."
     cd $curr
 }

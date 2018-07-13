@@ -30,20 +30,13 @@ void display_state(char c, char *fname)
 static void initial_state(char *fname)
 {
     printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
-    if (option.grep)
-        printf("Searching for pattern: %s\n", fname);
-    else
-        printf("Searching for exact match: %s\n", fname);
-    if (option.sys)
-        printf("System directory is being frisked...\n");
-    if (option.home)
-        printf("Home directory is being frisked...\n");
-    if (option.openf)
-        printf("Opening first match...\n");
-    if (option.csens)
-        printf("Case sensitive search...\n");
-    if (option.perm)
-        printf("Permission errors activated...\n");
+    printf("Searching for: [%s]\n", fname);
+    printf("Search type: %s\n", ((option.grep) ? "Pattern match" : "Exact match"));    
+    printf("Case sensitivity: %s\n", ((option.csens) ? "On" : "Off"));
+    printf("Search user files: %s\n", ((option.home) ? "On" : "Off"));
+    printf("Search system files: %s\n", ((option.sys) ? "On" : "Off"));
+    printf("Permission errors: %s\n", ((option.perm) ? "On" : "Off"));
+    printf("Auto-open: %s\n", ((option.openf) ? "On" : "Off"));
     printf("\n");
 }
 

@@ -6,7 +6,8 @@
 -> Add TODO in readme
 -> Write remaining unit tests
 -> Search for hidden files
--> Create interactive 'settings' menu to set
+-> Changelog and update Version number in source
+-> Makefile cleanup
 
 */
 
@@ -23,7 +24,6 @@
 #include <time.h>
 #include <unistd.h>
 #include "extern.h"
-#include "prototypes.h"
 #include "sysdep.h"
 
 #define NULLCHAR  '\0'
@@ -33,9 +33,10 @@
 extern int found;
 extern char *dname;
 
-static int entry_isvalid(char *fname);
-static int compare_entry(char *fname, char *entry_name);
-static void process_match(char *fname, char *path);
+static unsigned int entry_isvalid(char *fname);
+static unsigned int compare_entry(char *fname, char *entry_name);
+static void delegate_path(char *fname, char *path);
+static int fork_process(char *sh_script, char *path);
 
 
 /* Collect user input, parse optional flags */
@@ -62,7 +63,6 @@ char *input(int argc, char *argv[])
                     option.sys = 1;
                     break;
                 default:
-
                     // Save illegal flag to pass in error message
                     x = c;
                     error.bad_flag = 1;
@@ -78,7 +78,6 @@ char *input(int argc, char *argv[])
         option.grep = 1;
         *argv = (*argv + PM_LEN);
     }
-
     // Update user on current state of process
     display_state(x, *argv);
 
@@ -109,13 +108,13 @@ void traverse(char *fname, char *dname)
     struct stat fst;
     struct dirent *entry;
 
-    // Lets build this filepath
+    // Construct path to current file
     strcpy(path, dname);
     path[p_len++] = '/';
 
     if (!(dir = opendir(dname))) {
         if (option.perm)
-            printf("\nPermission denied: %s\n\n", path);
+            delegate_path(fname, path);
         return;
     }
 
@@ -128,7 +127,7 @@ void traverse(char *fname, char *dname)
         lstat(path, &fst);
 
         if (compare_entry(fname, entry->d_name))
-            process_match(fname, path);
+            delegate_path(fname, path);
         if (S_ISDIR(fst.st_mode))
             traverse(fname, path);
     }
@@ -138,7 +137,7 @@ void traverse(char *fname, char *dname)
 
 
 /* Determine whether or not to traverse given entry */
-static int entry_isvalid(char *fname)
+static unsigned int entry_isvalid(char *fname)
 {
     int is_valid = 1;
 
@@ -155,7 +154,7 @@ static int entry_isvalid(char *fname)
 
 
 /* Compare user input with current entry */
-static int compare_entry(char *fname, char *entry_name)
+static unsigned int compare_entry(char *fname, char *entry_name)
 {  
     if (!option.csens) {
         char *cp;
@@ -171,13 +170,16 @@ static int compare_entry(char *fname, char *entry_name)
 }
 
 
-/* Execute input/filename match as necessary */
-static void process_match(char *fname, char *path)
+/* Execute and display input/filename match as necessary */
+static void delegate_path(char *fname, char *path)
 {
     char *path_bucket = malloc(sizeof(char) * PATH_MAX);
     char *r_path = realpath(path, path_bucket);
 
-    printf("[%s] -> %s\n", fname, r_path);
+    if (option.perm)
+        printf("\nPermission denied: %s\n\n", path_bucket);
+    else
+        printf("[%s] -> %s\n", fname, r_path);
 
     // Open first occurance of filename match
     if (option.openf) {
@@ -225,7 +227,7 @@ int openfile(char *path)
 
 
 /* Execute shell command in forked child process */
-int fork_process(char *sh_script, char *path)
+static int fork_process(char *sh_script, char *path)
 {
     pid_t pid;
     int status;
