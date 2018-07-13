@@ -1,22 +1,16 @@
-#include "extern.h"
-#include "jsmn.h"
-#include "jsmn.c"
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include "extern.h"
+#include "jsmn.h"
+#include "jsmn.c"
+#include "prototypes.h"
 
-int set_config(char *c_file);
-char* pull_file(char *fname);
 static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config);
 static int eval_json(char *config, jsmntok_t *tok_key, jsmntok_t *tok_val, const char *opt_name);
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s);
-
-/* Option names must remain in order with config.json 
- * TODO: Dynamically generate this list.
- */
-const char* options[] = {"auto open", "pattern match", "case sensitivity", "permission errors", 
-                            "search user files", "search system files"};
-
 
 int set_config(char *c_file)
 {
@@ -77,7 +71,13 @@ char* pull_file(char *fname)
 static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
 {
     int i, j, opt;
-    
+
+    /* Option names must remain in order with config.json 
+     * TODO: Dynamically generate this list.
+     */
+    const char* options[] = {"auto open", "pattern match", "case sensitivity", "permission errors", 
+                                "search user files", "search system files"};
+        
     /* Loop over all keys of the root object */
 	for (i = 1, j = 0; i < ret; i++, j++) {
         if ((opt = eval_json(config, &t[i], &t[i + 1], options[j])) != 0) {
@@ -85,30 +85,31 @@ static int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
             // Cases must be listed in order with lines in config.json
             switch(j) {
                 case 0:
-                    option.openf = (opt) ? 1 : 0;
+                    option.openf = (opt > 0) ? 1 : 0;
                     break;
                 case 1:
-                    option.grep = (opt) ? 1 : 0;
+                    option.grep = (opt > 0) ? 1 : 0;
                     break;
                 case 2:
-                    option.csens = (opt) ? 1 : 0;
+                    option.csens = (opt > 0) ? 1 : 0;
                     break;
                 case 3:
-                    option.perm = (opt) ? 1 : 0;
+                    option.perm = (opt > 0) ? 1 : 0;
                     break;
                 case 4:
-                    option.home = (opt) ? 1 : 0;
+                    option.home = (opt > 0) ? 1 : 0;
                     break;
                 case 5:
-                    option.sys = (opt) ? 1 : 0;
+                    option.sys = (opt > 0) ? 1 : 0;
                     break;
                 default:
 
                     // Will only occur if for loop fails to iterate through 'j'
-                    printf("Error log: set_config() in config.c failed.\n");
+                    printf("Error log: set_config() in config.c failed\n");
                     exit(1);
             }
-        }
+        } else
+            printf("Error log: Option %s not set\n", options[j]);
         i++; // Skip to next key, value pair (&t[i], &t[i+1])
 	}
     return 0;
@@ -136,4 +137,19 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 		return 0;
 	}
 	return -1;
+}
+
+
+/* Allows diskfrisk to be initialized within any directory */
+char *build_cfile_path(char *path)
+{
+    char *abspath = malloc(sizeof(char) * PATH_MAX);
+    char *user = getlogin();
+
+    strcat(abspath, HOME);
+    strcat(abspath, "/");
+    strcat(abspath, user);
+    strcat(abspath, path);
+
+    return abspath;
 }

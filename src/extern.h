@@ -1,8 +1,8 @@
 #ifndef EXTERN_H
 #define EXTERN_H
 
-#include "sysdep.h"
 #include <time.h>
+#include "sysdep.h"
 
 struct option_flags {
     int csens;       // Case-sensitive search
@@ -18,7 +18,7 @@ struct error_flags {
     int bad_flag;    // Illegal flag
 } error;
 
-int test;
+int test;            // CUnit hook
 int found;           // Number of results
 char *dname;         // Set by default
 

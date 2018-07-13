@@ -18,6 +18,7 @@ function f() {
     done
 }
 
+# Runs makefile from any dir, useful for development
 function dfmake() {
     echo "Making DISKFRISK..."
     curr=$(pwd)

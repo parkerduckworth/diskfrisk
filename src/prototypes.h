@@ -1,18 +1,18 @@
 #ifndef PROTOTYPES_H
 #define PROTOTYPES_H
 
-char *input(int argc, char *argv[]);
+/* main.c, diskfrisk.c -> diskfrisk.h*/
+char* input(int argc, char *argv[]);
 void frisk(char *fname, char *dname);
 void traverse(char *fname, char *dname);
-int entry_isvalid(char *fname);
-int compare_entry(char *, char *);
-void pmatch(char *fname, char *text, char *path);
-void process_match(char *fname, char *path);
+char *build_path(char *path, char *base_dir);
 int openfile(char *path);
 int fork_process(char *sh_script, char *path);
 void display_state(char c, char *fname);
-void initial_state(char *fname);
-void result_line(char *fname);
-void display_err(char c);
+
+/* main.c, config.c, test_config.c -> config.h*/
+char *build_cfile_path(char *path);
+int set_config(char *c_file);
+char* pull_file(char *fname);
 
 #endif

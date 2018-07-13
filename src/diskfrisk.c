@@ -1,32 +1,30 @@
 /* TODO
 
--> Integrate JSMN
 -> Set up CI
--> Polish up readme
+-> Update readme to include config file functionality
+-> Mention system dependencies in readme
+-> Add TODO in readme
 -> Write remaining unit tests
 -> Search for hidden files
--> Store options into config file, so search settings can persist
--> Create interactive options menu to set
--> Write makefile
-    - compiile execs to /bin on make
--> Display all active options from config file for each search
+-> Create interactive 'settings' menu to set
 
 */
 
+
 #include <ctype.h>
 #include <dirent.h>
-#include "extern.h"
 #include <limits.h>
-#include "prototypes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
-#include "sysdep.h"
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
+#include "extern.h"
+#include "prototypes.h"
+#include "sysdep.h"
 
 #define NULLCHAR  '\0'
 #define PMATCH    "grep:"         // User command to search by pattern match
@@ -34,6 +32,11 @@
 
 extern int found;
 extern char *dname;
+
+static int entry_isvalid(char *fname);
+static int compare_entry(char *fname, char *entry_name);
+static void process_match(char *fname, char *path);
+
 
 /* Collect user input, parse optional flags */
 char *input(int argc, char *argv[])
@@ -135,7 +138,7 @@ void traverse(char *fname, char *dname)
 
 
 /* Determine whether or not to traverse given entry */
-int entry_isvalid(char *fname)
+static int entry_isvalid(char *fname)
 {
     int is_valid = 1;
 
@@ -152,7 +155,7 @@ int entry_isvalid(char *fname)
 
 
 /* Compare user input with current entry */
-int compare_entry(char *fname, char *entry_name)
+static int compare_entry(char *fname, char *entry_name)
 {  
     if (!option.csens) {
         char *cp;
@@ -169,9 +172,12 @@ int compare_entry(char *fname, char *entry_name)
 
 
 /* Execute input/filename match as necessary */
-void process_match(char *fname, char *path)
+static void process_match(char *fname, char *path)
 {
-    printf("[%s] -> %s\n", fname, path);
+    char *path_bucket = malloc(sizeof(char) * PATH_MAX);
+    char *r_path = realpath(path, path_bucket);
+
+    printf("[%s] -> %s\n", fname, r_path);
 
     // Open first occurance of filename match
     if (option.openf) {
@@ -184,6 +190,9 @@ void process_match(char *fname, char *path)
     }
 
     found++;
+    r_path = NULL;
+    free(path_bucket);
+
     return;
 }
 
