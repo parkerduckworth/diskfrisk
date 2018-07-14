@@ -1,11 +1,11 @@
 /* TODO
 
--> Set up CI
--> Add TODO in readme
 -> Write remaining unit tests
+-> Makefile cleanup
+-> Remove need for HNAME
+-> Add TODO in readme
 -> Search for hidden files
 -> Changelog and update Version number in source
--> Makefile cleanup
 
 */
 

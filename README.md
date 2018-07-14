@@ -202,8 +202,11 @@ Currently, DISKFRISK is only ran and testsed on macOS. I am reasonably sure that
 
 Included is the useful make utility `dfmake`, located in `src/exec.sh`.  
 ```
-USER-MBP:~ user$ dfmake
 Making DISKFRISK...
+cc    -c -o src/main.o src/main.c
+cc    -c -o src/diskfrisk.o src/diskfrisk.c
+cc    -c -o src/display.o src/display.c
+cc    -c -o src/config.o src/config.c
 gcc -o bin/find src/main.o src/diskfrisk.o src/display.o src/config.o
 Make finished.
 USER-MBP:~ user$ 
