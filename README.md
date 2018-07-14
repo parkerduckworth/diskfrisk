@@ -1,17 +1,24 @@
 # DISKFRISK
+[![Build Status](https://travis-ci.org/parkerduckworth/diskfrisk.svg?branch=master)](https://travis-ci.org/parkerduckworth/diskfrisk)
+
 A simple, developer-friendly UNIX shell file search solution.
+
+## Quick Links
+* [Code Example](#code-example)
+* [Intsallation](#installation)
+* [Detailed Usage](#detailed-usage)
+* [Testing](#testing)
+* [System Dependencies](#system-dependencies)
+* [Other Useful Information](#other-useful-information)
+* [Contribute](#contribute)
+* [Credits](#credits)
+
 
 ## Motivation
 As developers, we spend significant time at the command line. Born of the 
 desire to search for files without constantly switching windows, **DISKFRISK** 
 enables quick and easy file lookups.  With features such as auto-open, adjustable 
 case sensitivity, and pattern matching, searches can be tailored for any need.
-
-<!-- ## Build status
-Build status of continus integration i.e. travis, appveyor etc. Ex. - 
-
-[![Build Status](https://travis-ci.org/akashnimare/foco.svg?branch=master)](https://travis-ci.org/akashnimare/foco)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/akashnimare/foco?branch=master&svg=true)](https://ci.appveyor.com/project/akashnimare/foco/branch/master) -->
 
 <!-- ## Code style
 If you're using any code style like xo, standard etc. That will help others while contributing to your project. Ex. -
@@ -26,6 +33,7 @@ Ex. -
 
 <b>Built with</b>
 - [Electron](https://electron.atom.io) -->
+
 ## Features
 - **Case Sensitivity:** Can be toggled on and off.
 - **Target Directory Selection:** Set base directory as needed.
@@ -157,7 +165,7 @@ Auto-open: On
 ```
 > This shows how options can be combined into a single flag. Options can appear in any order and can be combined together.  If not combined, they must be separated by whitespace.
 
-## Tests
+## Testing
 All tests are located in the `tests` folder.
 1. cd into `tests`.
 2. compile:
@@ -205,12 +213,11 @@ This executes the makefile from any directory, proving very convenient during de
 ## Contribute
 
 Contribution Guideline coming soon.
+Please feel free to use, share, and extend this project. PR's welcome.
 
 ## Credits
 
 Thanks to [Serge Zaitsev](https://zserge.com/) and his [JSMN](https://github.com/zserge/jsmn) JSON parsing library.  
 
-## License
-Please feel free to use, share, and extend this project. PR's welcome.
-
+---
 MIT © [Parker Duckworth](http://github.com/parkerduckworth)
