@@ -9,20 +9,29 @@ function dfstart() {
         echo "____________________________________________"
         echo "Enter search, or \"settings\" for more options"
         printf "DISKFRISK$ "
-        read search
-        if [ "$search" = "q" ]; then
+        read input
+        if [ "$input" = "q" ]
+        then
             echo "exiting..."
             return 0
+        elif [ "$input" = "settings" ]
+        then 
+            vi ~/diskfrisk/config.json
+        elif [ "$input" = "settings-ext" ]
+        then
+            open ~/diskfrisk/config.json
+        else
+            ~/diskfrisk/bin/find $input
         fi
-        ~/diskfrisk/bin/$search
     done
 }
 
+# Runs makefile from any dir, useful for development
 function dfmake() {
     echo "Making DISKFRISK..."
     curr=$(pwd)
     cd ~/diskfrisk
-    make find
-    echo "Make complete."
+    make
+    echo "Make finished."
     cd $curr
 }
