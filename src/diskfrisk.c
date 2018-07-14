@@ -1,8 +1,6 @@
 /* TODO
 
 -> Set up CI
--> Update readme to include config file functionality
--> Mention system dependencies in readme
 -> Add TODO in readme
 -> Write remaining unit tests
 -> Search for hidden files
@@ -26,16 +24,12 @@
 #include "extern.h"
 #include "sysdep.h"
 
-#define NULLCHAR  '\0'
-#define PMATCH    "grep:"         // User command to search by pattern match
-#define PM_LEN    strlen(PMATCH)  // Pattern match command length
-
 extern int found;
 extern char *dname;
 
 static unsigned int entry_isvalid(char *fname);
 static unsigned int compare_entry(char *fname, char *entry_name);
-static void delegate_path(char *fname, char *path);
+static void delegate_path(char *fname, char *path, int status);
 static int fork_process(char *sh_script, char *path);
 
 
@@ -56,11 +50,14 @@ char *input(int argc, char *argv[])
                 case 'o':
                     option.openf = 1;
                     break;
-                case 'p':
+                case 'e':
                     option.perm = 1;
                     break;
                 case 's':
                     option.sys = 1;
+                    break;
+                case 'p':
+                    option.pmatch = 1;
                     break;
                 default:
                     // Save illegal flag to pass in error message
@@ -74,10 +71,7 @@ char *input(int argc, char *argv[])
         x = -1;
         error.no_fn = 1;
     }
-    if (!strncmp(*argv, PMATCH, PM_LEN)) {
-        option.grep = 1;
-        *argv = (*argv + PM_LEN);
-    }
+
     // Update user on current state of process
     display_state(x, *argv);
 
@@ -95,7 +89,7 @@ void frisk(char *fname, char *dname)
     end = clock();
     t_elapsed = ((double)(end-start)) / CLOCKS_PER_SEC;
 
-    display_state(NULLCHAR, fname);
+    display_state('\0', fname);
 }
 
 
@@ -114,7 +108,7 @@ void traverse(char *fname, char *dname)
 
     if (!(dir = opendir(dname))) {
         if (option.perm)
-            delegate_path(fname, path);
+            delegate_path(fname, path, 1);
         return;
     }
 
@@ -127,7 +121,7 @@ void traverse(char *fname, char *dname)
         lstat(path, &fst);
 
         if (compare_entry(fname, entry->d_name))
-            delegate_path(fname, path);
+            delegate_path(fname, path, 0);
         if (S_ISDIR(fst.st_mode))
             traverse(fname, path);
     }
@@ -164,27 +158,29 @@ static unsigned int compare_entry(char *fname, char *entry_name)
             *cp = tolower(*cp);
     }
 
-    if (option.grep)
+    if (option.pmatch)
         return (strstr(entry_name, fname) ? 1: 0);
     return (!strcmp(entry_name, fname) ? 1 : 0);
 }
 
 
 /* Execute and display input/filename match as necessary */
-static void delegate_path(char *fname, char *path)
+static void delegate_path(char *fname, char *path, int status)
 {
     char *path_bucket = malloc(sizeof(char) * PATH_MAX);
     char *r_path = realpath(path, path_bucket);
 
-    if (option.perm)
+    if (status == 1)
         printf("\nPermission denied: %s\n\n", path_bucket);
-    else
+    else if (status == 0)
         printf("[%s] -> %s\n", fname, r_path);
+    else
+        printf("\nError log: Illegal status passed to delegate_path\n");
 
     // Open first occurance of filename match
     if (option.openf) {
         if ((openfile(path)) < 0) {
-            printf("Unable to open %s\n", path);
+            printf("Error log: Unable to open %s\n", path);
         }
 
         // Must be set back to 0, or every result will be opened.
@@ -208,12 +204,12 @@ int openfile(char *path)
     size_t curr_sz = strlen(path);  // Current length of shell script
     size_t c_len = strlen(sh_cmd);  // Length of shell command
 
-    // String to contain shell script -> open command + filepath + slot for NULLCHAR
+    // String to contain shell script -> open command + filepath + slot for '\0'
     char *sh_script = (char *)malloc(sizeof(char) * curr_sz + c_len + 1);
 
     // Udpate current size and terminate string.
     curr_sz += c_len + 1;
-    *(sh_script + curr_sz) = NULLCHAR;
+    *(sh_script + curr_sz) = '\0';
 
     strcpy(sh_script, sh_cmd);
     strcat(sh_script, path);

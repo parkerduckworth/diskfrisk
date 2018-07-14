@@ -3,7 +3,7 @@
 # source ~/diskfrisk/bin/exec.sh
 
 # Run the application recursively
-function f() {
+function dfstart() {
     echo "DISKFRISK INITIATED"
     while true; do
         echo "____________________________________________"
@@ -15,8 +15,11 @@ function f() {
             echo "exiting..."
             return 0
         elif [ "$input" = "settings" ]
+        then 
+            vi ~/diskfrisk/config.json
+        elif [ "$input" = "settings-ext" ]
         then
-            ~/diskfrisk/bin/settings
+            open ~/diskfrisk/config.json
         else
             ~/diskfrisk/bin/find $input
         fi

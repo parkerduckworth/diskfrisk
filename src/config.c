@@ -26,13 +26,13 @@ int set_config(char *c_file)
 	jsmn_init(&p);
 	r = jsmn_parse(&p, config, strlen(config), t, sizeof(t)/sizeof(t[0]));
 	if (r < 0) {
-		printf("Failed to parse JSON: %d\n", r);
+		printf("\nError log: Failed to parse JSON: %d\n", r);
 		return 1;
 	}
 
 	// Assume the top-level element is an object
 	if (r < 1 || t[0].type != JSMN_OBJECT) {
-		printf("Object expected\n");
+		printf("\nError log: Settings file must be formatted with correct JSON syntax\n");
 		return 1;
 	}
 
@@ -74,7 +74,7 @@ static unsigned int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
     /* Option names must remain in order with config.json 
      * TODO: Dynamically generate this list.
      */
-    const char* options[] = {"auto open", "pattern match", "case sensitivity", "permission errors", 
+    const char *options[] = {"auto open", "pattern match", "case sensitivity", "permission errors", 
                                 "search user files", "search system files"};
         
     // Loop over all keys of the root object
@@ -87,7 +87,7 @@ static unsigned int set_option(jsmnerr_t ret, jsmntok_t *t, char *config)
                     option.openf = (opt > 0) ? 1 : 0;
                     break;
                 case 1:
-                    option.grep = (opt > 0) ? 1 : 0;
+                    option.pmatch = (opt > 0) ? 1 : 0;
                     break;
                 case 2:
                     option.csens = (opt > 0) ? 1 : 0;
@@ -140,11 +140,10 @@ static unsigned int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 }
 
 
-/* Allows config file to be accessed from within any directory 
- * You must free 'abspath' when passed to another function
- */
+/* Allows config file to be accessed from within any directory */
 char *build_cfile_path(char *path)
 {
+    // You must free 'abspath' when passed to another function
     char *abspath = malloc(sizeof(char) * PATH_MAX);
     char *user = getlogin();
 
@@ -155,4 +154,3 @@ char *build_cfile_path(char *path)
 
     return abspath;
 }
-

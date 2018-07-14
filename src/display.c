@@ -31,7 +31,7 @@ static void initial_state(char *fname)
 {
     printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
     printf("Searching for: [%s]\n", fname);
-    printf("Search type: %s\n", ((option.grep) ? "Pattern match" : "Exact match"));    
+    printf("Search type: %s\n", ((option.pmatch) ? "Pattern match" : "Exact match"));    
     printf("Case sensitivity: %s\n", ((option.csens) ? "On" : "Off"));
     printf("Search user files: %s\n", ((option.home) ? "On" : "Off"));
     printf("Search system files: %s\n", ((option.sys) ? "On" : "Off"));

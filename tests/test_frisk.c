@@ -7,15 +7,13 @@
 */
 
 #include <CUnit/Basic.h>
+#include <stdio.h>
+#include <time.h>
+#include "test.h"
 #include "../src/diskfrisk.c"
 #include "../src/display.c"
 #include "../src/extern.h"
-#include "../src/prototypes.h"
 #include "../src/sysdep.h"
-#include <stdio.h>
-#include <time.h>
-
-#define TFNAME "TEST"  // <filename> used for testing
 
 extern int test;
 extern int found;

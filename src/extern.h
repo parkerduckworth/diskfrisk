@@ -19,7 +19,7 @@ char* pull_file(char *fname);
 
 struct option_flags {
     int csens;       // Case-sensitive search
-    int grep;        // Search by pattern match
+    int pmatch;        // Search by pattern match
     int home;        // Search the home directory/user files
     int openf;       // Open first occurance of filename match
     int perm;        // Display permission errors

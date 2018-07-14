@@ -1,8 +1,8 @@
 {
   "auto open": false,
-  "pattern match": true,
+  "pattern match": false,
   "case sensitivity": false,
-  "permission errors": false,
+  "permission errors": true,
   "search user files": true,
   "search system files": false
 }

@@ -5,7 +5,6 @@ tests/test_execs
 # Files
 .DS_Store
 bin/find
-bin/settings
 
 # Extensions
 *.out

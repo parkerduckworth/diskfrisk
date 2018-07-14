@@ -7,9 +7,10 @@
 */
 
 #include <CUnit/Basic.h>
+#include <stdio.h>
+#include "test.h"
 #include "../src/config.c"
 #include "../src/extern.h"
-#include <stdio.h>
 
 extern int test;
 extern int found;
@@ -18,15 +19,6 @@ int truthify(FILE*);
 
 char *cfile_loc = "../config.json";           // Original config file path
 char *t_cfile_loc = "temp/test_config.json";  // Temp config file path
-
-struct test_options {
-    int t_csens;
-    int t_grep;
-    int t_home;
-    int t_openf;
-    int t_perm;
-    int t_sys;
-} t_option;
 
 /* Copy config file to temp for testing */
 int make_test_file(void)
@@ -77,7 +69,7 @@ int init_config_suite(void)
 {
     // Save existing config settings
     t_option.t_csens = option.csens;
-    t_option.t_grep = option.grep;
+    t_option.t_pmatch = option.pmatch;
     t_option.t_home = option.home;
     t_option.t_openf = option.openf;
     t_option.t_perm = option.perm;
@@ -85,7 +77,7 @@ int init_config_suite(void)
 
     // Test will attempt to set all options to 1, zero them out beforehand.
     option.csens = 0;
-    option.grep = 0;
+    option.pmatch = 0;
     option.home = 0;
     option.openf = 0;
     option.perm = 0;
@@ -103,7 +95,7 @@ int clean_config_suite(void)
 {
     // Reset previous config settings
     option.csens = t_option.t_csens;
-    option.grep = t_option.t_grep;
+    option.pmatch = t_option.t_pmatch;
     option.home = t_option.t_home;
     option.openf = t_option.t_openf;
     option.perm = t_option.t_perm;
@@ -125,7 +117,7 @@ void config_file_test(void)
         CU_FAIL("Invalid configuration file");
 
     CU_ASSERT_EQUAL(option.csens, 1);
-    CU_ASSERT_EQUAL(option.grep, 1);
+    CU_ASSERT_EQUAL(option.pmatch, 1);
     CU_ASSERT_EQUAL(option.home, 1);
     CU_ASSERT_EQUAL(option.openf, 1);
     CU_ASSERT_EQUAL(option.perm, 1);

@@ -1,4 +1,4 @@
-all: find settings
+all: find
 
 main.o:			src/extern.h src/sysdep.h src/main.c
 			gcc -c src/main.c
@@ -11,7 +11,3 @@ config.o:		src/config.c src/extern.h src/jsmn.c src/jsmn.h
 find:			src/main.o src/diskfrisk.o src/display.o src/config.o
 			gcc -o bin/find src/main.o src/diskfrisk.o src/display.o src/config.o
 
-settings.o:		src/settings.c src/extern.h
-			gcc -c src/settings.c
-settings:		src/settings.o
-			gcc -o bin/settings src/settings.o
