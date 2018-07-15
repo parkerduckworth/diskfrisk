@@ -58,16 +58,16 @@ Enter search, or "settings" for more options
 DISKFRISK$ main.c
 
 
-DISKFRISK -- VERSION #.#.#
+DISKFRISK -- VERSION 0.0.0
 
 
-Searching for: [main.c]
-Search type: Pattern match
-Case sensitivity: Off
-Search user files: On
-Search system files: Off
-Permission errors: On
-Auto-open: Off
+Searching for:            [main.c]
+Search type:              Exact match
+Case sensitivity:         Off
+Search user files:        On
+Search system files:      Off
+Permission errors:        On
+Auto-open:                Off
 
 ```
 Notice the readout of options displayed when search is executed.  The above settings are default, and can easily be [changed](#detailed-usage).
@@ -152,16 +152,16 @@ Enter search, or "settings" for more options
 DISKFRISK$ -op <filename>
 
 
-DISKFRISK -- VERSION #.#.#
+DISKFRISK -- VERSION 0.0.0
 
 
-Searching for: [<filename>]
-Search type: Pattern match
-Case sensitivity: Off
-Search user files: On
-Search system files: Off
-Permission errors: On
-Auto-open: On
+Searching for:            [filename]
+Search type:              Pattern match
+Case sensitivity:         Off
+Search user files:        On
+Search system files:      Off
+Permission errors:        On
+Auto-open:                On
 ```
 > This shows how options can be combined into a single flag. Options can appear in any order and can be combined together.  If not combined, they must be separated by whitespace.
 
@@ -202,8 +202,11 @@ Currently, DISKFRISK is only ran and testsed on macOS. I am reasonably sure that
 
 Included is the useful make utility `dfmake`, located in `src/exec.sh`.  
 ```
-USER-MBP:~ user$ dfmake
 Making DISKFRISK...
+cc    -c -o src/main.o src/main.c
+cc    -c -o src/diskfrisk.o src/diskfrisk.c
+cc    -c -o src/display.o src/display.c
+cc    -c -o src/config.o src/config.c
 gcc -o bin/find src/main.o src/diskfrisk.o src/display.o src/config.o
 Make finished.
 USER-MBP:~ user$ 
