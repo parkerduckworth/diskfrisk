@@ -58,16 +58,16 @@ Enter search, or "settings" for more options
 DISKFRISK$ main.c
 
 
-DISKFRISK -- VERSION #.#.#
+DISKFRISK -- VERSION 0.0.0
 
 
-Searching for: [main.c]
-Search type: Pattern match
-Case sensitivity: Off
-Search user files: On
-Search system files: Off
-Permission errors: On
-Auto-open: Off
+Searching for:            [main.c]
+Search type:              Exact match
+Case sensitivity:         Off
+Search user files:        On
+Search system files:      Off
+Permission errors:        On
+Auto-open:                Off
 
 ```
 Notice the readout of options displayed when search is executed.  The above settings are default, and can easily be [changed](#detailed-usage).
@@ -152,16 +152,16 @@ Enter search, or "settings" for more options
 DISKFRISK$ -op <filename>
 
 
-DISKFRISK -- VERSION #.#.#
+DISKFRISK -- VERSION 0.0.0
 
 
-Searching for: [<filename>]
-Search type: Pattern match
-Case sensitivity: Off
-Search user files: On
-Search system files: Off
-Permission errors: On
-Auto-open: On
+Searching for:            [filename]
+Search type:              Pattern match
+Case sensitivity:         Off
+Search user files:        On
+Search system files:      Off
+Permission errors:        On
+Auto-open:                On
 ```
 > This shows how options can be combined into a single flag. Options can appear in any order and can be combined together.  If not combined, they must be separated by whitespace.
 

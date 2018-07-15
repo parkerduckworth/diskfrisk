@@ -30,13 +30,13 @@ void display_state(char c, char *fname)
 static void initial_state(char *fname)
 {
     printf("\n\nDISKFRISK -- VERSION 0.0.0\n\n\n");
-    printf("Searching for: [%s]\n", fname);
-    printf("Search type: %s\n", ((option.pmatch) ? "Pattern match" : "Exact match"));    
-    printf("Case sensitivity: %s\n", ((option.csens) ? "On" : "Off"));
-    printf("Search user files: %s\n", ((option.home) ? "On" : "Off"));
-    printf("Search system files: %s\n", ((option.sys) ? "On" : "Off"));
-    printf("Permission errors: %s\n", ((option.perm) ? "On" : "Off"));
-    printf("Auto-open: %s\n", ((option.openf) ? "On" : "Off"));
+    printf("%-25s [%s]\n", "Searching for:", fname);
+    printf("%-25s %s\n", "Search type:", ((option.pmatch) ? "Pattern match" : "Exact match"));   
+    printf("%-25s %s\n", "Case sensitivity:", ((option.csens) ? "On" : "Off"));
+    printf("%-25s %s\n", "Search user files:", ((option.home) ? "On" : "Off"));
+    printf("%-25s %s\n", "Search system files:", ((option.sys) ? "On" : "Off"));
+    printf("%-25s %s\n", "Permission errors:", ((option.perm) ? "On" : "Off"));
+    printf("%-25s %s\n", "Auto-open:", ((option.openf) ? "On" : "Off"));
     printf("\n");
 }
 
