@@ -5,7 +5,7 @@ A simple, developer-friendly UNIX shell file search solution.
 
 ## Quick Links
 * [Code Example](#code-example)
-* [Intsallation](#installation)
+* [Installation](#installation)
 * [Detailed Usage](#detailed-usage)
 * [Testing](#testing)
 * [System Dependencies](#system-dependencies)
