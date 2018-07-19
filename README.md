@@ -13,26 +13,11 @@ A simple, developer-friendly UNIX shell file search solution.
 * [Contribute](#contribute)
 * [Credits](#credits)
 
-
 ## Motivation
 As developers, we spend significant time at the command line. Born of the 
 desire to search for files without constantly switching windows, **DISKFRISK** 
 enables quick and easy file lookups.  With features such as auto-open, adjustable 
 case sensitivity, and pattern matching, searches can be tailored for any need.
-
-<!-- ## Code style
-If you're using any code style like xo, standard etc. That will help others while contributing to your project. Ex. -
-
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
- 
-## Screenshots
-Include logo/demo screenshot etc.
-
-## Tech/framework used
-Ex. -
-
-<b>Built with</b>
-- [Electron](https://electron.atom.io) -->
 
 ## Features
 - **Case Sensitivity:** Can be toggled on and off.
@@ -86,8 +71,8 @@ All options and funcitonality is described in the [Detailed Usage](#detailed-usa
 ## Installation
 1. Clone this repository into your home directory.
 2. While in the base project directory, enter `make`.
-3. Open your `.bash_profile` and add `source <path>/diskfrisk/bin/exec.sh` to an open line. 
-4. Initiate DISKFRISK with `dfstart` from any working directory.
+3. Add `source <path>/diskfrisk/bin/exec.sh` to an open line on whichever shell initialization script you typially use. 
+4. Initiate DISKFRISK whenever you want to make a search with `dfstart` from any working directory.
 
 (New users, make sure to replace `<path>` with the absolute path to the cloned repository.)
 
@@ -215,7 +200,7 @@ This executes the makefile from any directory, proving very convenient during de
 
 ## Contribute
 
-Contribution Guideline coming soon.
+Contribution Guideline can be found [here](http://github.com/parkerduckworth/diskfrisk/blob/master/CONTRIBUTING.md).
 Please feel free to use, share, and extend this project. PR's welcome.
 
 ## Credits
