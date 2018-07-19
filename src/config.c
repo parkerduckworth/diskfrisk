@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,13 +51,16 @@ char* pull_file(char *fname)
     char *buf;
     size_t sz;
 
-    fp = fopen(fname, "r");
+    if ((fp = fopen(fname, "r")) == NULL) {
+        printf("Error: unable to pull file: %s\n", fname);
+        exit(1);
+    }
     fseek(fp, 0L, SEEK_END);
     sz = ftell(fp);
 
     // You are responsible for freeing 'buf' when it is passed to another function
     buf = malloc(sizeof(char) * sz + 1);
-    *(buf + sz + 1) = '\0';
+    buf[sz] = '\0';
 
     rewind(fp);
     fread(buf, sz, 1, fp);
@@ -145,11 +149,16 @@ char *build_cfile_path(char *path)
 {
     // You must free 'abspath' when passed to another function
     char *abspath = malloc(sizeof(char) * PATH_MAX);
-    char *user = getlogin();
+    uid_t uid = getuid();
+    struct passwd *pwd = getpwuid(uid);
 
-    strcat(abspath, HOME);
+    if (!pwd) {
+        return NULL;
+    }
+    const char *user = pwd->pw_name;
+
+    strcpy(abspath, pwd->pw_dir);
     strcat(abspath, "/");
-    strcat(abspath, user);
     strcat(abspath, path);
 
     return abspath;

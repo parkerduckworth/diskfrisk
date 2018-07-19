@@ -1,7 +1,9 @@
 #ifndef EXTERN_H
 #define EXTERN_H
 
+#include <pwd.h>
 #include <time.h>
+#include <unistd.h>
 #include "sysdep.h"
 
     #ifndef CONFIG_PATH

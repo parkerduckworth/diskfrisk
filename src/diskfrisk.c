@@ -33,6 +33,7 @@ static void delegate_path(char *fname, char *path, int status);
 static int fork_process(char *sh_script, char *path);
 
 
+
 /* Collect user input, parse optional flags */
 char *input(int argc, char *argv[])
 {
@@ -60,7 +61,7 @@ char *input(int argc, char *argv[])
                     option.pmatch = 1;
                     break;
                 default:
-                    // Save illegal flag to pass in error message
+                    // Save illegal flag to HOMEpass in error message
                     x = c;
                     error.bad_flag = 1;
                     break;
