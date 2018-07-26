@@ -10,7 +10,7 @@
 #define HNAME     "Users"   // Home directory name
 #define HOME      "/Users"  // Home directory path
 #define ROOT      "/"       // Root directory path
-#define SHOPEN    "open "   // Open command
+#define SHOPEN    "open "   // Open command (space necessary for valid bash commands)
 #endif
 
 //Defining for compilation on Linux
@@ -19,7 +19,7 @@
 #define HNAME     "home"      // Home directory name
 #define HOME      "/home"     // Home directory path
 #define ROOT      "/"         // Root directory path
-#define SHOPEN    "xdg-open"  // Open command
+#define SHOPEN    "xdg-open " // Open command (space necessary for valid bash commands)
 #endif
 
 #endif
