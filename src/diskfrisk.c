@@ -61,7 +61,7 @@ char *input(int argc, char *argv[])
                     option.pmatch = 1;
                     break;
                 default:
-                    // Save illegal flag to HOMEpass in error message
+                    // Save illegal flag to pass in error message
                     x = c;
                     error.bad_flag = 1;
                     break;
