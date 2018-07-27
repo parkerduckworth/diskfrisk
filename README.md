@@ -8,7 +8,7 @@ A simple, developer-friendly UNIX shell file search solution.
 * [Installation](#installation)
 * [Detailed Usage](#detailed-usage)
 * [Testing](#testing)
-* [System Dependencies](#system-dependencies)
+* [Verified Build Environments](#verified-build-environments)
 * [Other Useful Information](#other-useful-information)
 * [Contribute](#contribute)
 * [Credits](#credits)
@@ -162,26 +162,11 @@ cc <test_filename>.c -o test_execs/<test_filename> -lcunit
 test_execs/<test_filename>
 ```
 
-## System Dependencies
+## Verified Build Environments
 
-Currently, DISKFRISK is only ran and testsed on macOS. I am reasonably sure that it can run on most UNIX-based systems.  If you are running a Linux distribution, take a look at `src/sysdep.h` and make sure everything lines up with your system.
-```c
-/* System Dependencies ~macOS High Sierra 10.13.3 */
-#ifndef SYSDEP_H
-#define SYSDEP_H
+* macOS High Sierra Version 10.13.3
+* Ubuntu 18.04.1 LTS 
 
-/* OSX nomenclature */
-#define HNAME     "Users"   // Home directory name
-#define HOME      "/Users"  // Home directory path
-#define ROOT      "/"       // Root directory path
-
-/* Bash syntax */
-#define RDFROMS   "-c"      // Read-from-string option
-#define SHOPEN    "open "   // Open command
-#define SHELL     "sh"      // Initiate new environment context
-
-#endif
-```
 
 ## Other Useful Information
 
@@ -200,7 +185,7 @@ This executes the makefile from any directory, proving very convenient during de
 
 ## Contribute
 
-Contribution Guideline can be found [here](http://github.com/parkerduckworth/diskfrisk/blob/master/CONTRIBUTING.md).
+Contribution Guideline can be found [here](https://github.com/parkerduckworth/diskfrisk/blob/master/CONTRIBUTING.md).
 Please feel free to use, share, and extend this project. PR's welcome.
 
 ## Credits
@@ -208,4 +193,4 @@ Please feel free to use, share, and extend this project. PR's welcome.
 Thanks to [Serge Zaitsev](https://zserge.com/) and his [JSMN](https://github.com/zserge/jsmn) JSON parsing library.  
 
 ---
-MIT © [Parker Duckworth](http://github.com/parkerduckworth)
+[MIT](https://github.com/parkerduckworth/diskfrisk/blob/master/LICENSE) © [Parker Duckworth](https://github.com/parkerduckworth)
